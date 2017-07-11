@@ -1,0 +1,4 @@
+django
+zappa
+wand
+boto

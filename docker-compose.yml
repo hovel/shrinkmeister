@@ -1,0 +1,14 @@
+web:
+  build: .
+  links:
+    - mc
+  ports:
+    - "8000:80"
+  environment:
+    - AWS_ACCESS_KEY_ID
+    - AWS_SECRET_ACCESS_KEY
+  volumes:
+    - ".:/root/src"
+  command: bash -c "cd /root/src/ && python manage.py runserver 0.0.0.0:80"
+mc:
+  image: sylvainlasnier/memcached
