@@ -12,3 +12,5 @@ web:
   command: bash -c "cd /root/src/ && python manage.py runserver 0.0.0.0:80"
 mc:
   image: sylvainlasnier/memcached
+  ports:
+    - "11211:11211"
