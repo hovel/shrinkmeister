@@ -111,7 +111,9 @@ def shrink_and_store(img, size, target_bucket, target_key, cache_key):
 def get_thumbnail(img, target_geometry):
     width, height = calculate_size(img.width, img.height, target_geometry)
     #TODO Find how to get bucket/key from image object
-    url = THUMBNAIL_SERVER_URL + generate_protected_request('bucketname', 'key',target_geometry)
+    bucket = img.storage.bucket_name
+    key = img.url
+    url = THUMBNAIL_SERVER_URL + generate_protected_request(bucket, key, target_geometry)
     return ImageLikeObject(url, width, height)
 
 
