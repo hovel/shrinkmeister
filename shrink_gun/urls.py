@@ -13,9 +13,9 @@ Including another URLconf
     1. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
 from django.conf.urls import include, url
-from django.contrib import admin
-from shrink_gun.views import ThumbnailFromURL
+from views import ThumbnailFromURL, ThumbnailFromHash
 
 urlpatterns = [
-    url(r'^', include('shrink_gun.urls')),
+    url(r'^url/$', ThumbnailFromURL.as_view(), name='thumbnail_from_url'),
+    url(r'^hash/(?P<hash>\S+)/$', ThumbnailFromHash.as_view(), name='thumbnail_from_hash')
 ]

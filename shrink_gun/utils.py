@@ -4,6 +4,7 @@ from urllib2 import urlopen
 from wand.image import Image
 from hashlib import md5
 from django.core.cache import cache
+from django.core import signing
 
 def image_from_url(url):
     '''
@@ -19,7 +20,7 @@ def image_from_s3(bucket, key):
     '''
     client = boto3.client('s3')
     stream = client.get_object(Bucket=bucket, Key=key)
-    img = Image(file=stream)
+    img = Image(file=stream['Body'])
     return img
 
 def generate_cache_key(url='', bucket='', key='', size='', extra=''):
@@ -30,6 +31,17 @@ def generate_cache_key(url='', bucket='', key='', size='', extra=''):
     '''
     md = md5(url+bucket+key+size+extra)
     return md.hexdigest()
+
+def generate_protected_request(bucket, key, size):
+    '''
+    Create encrypted string containing address of source image and target image size
+    '''
+    struct = {
+        'bucket': bucket,
+        'key': key,
+        'size': size
+    }
+    return signing.dumps(struct)
 
 def shrink_and_store(img, size, target_bucket, target_key, cache_key):
     '''
