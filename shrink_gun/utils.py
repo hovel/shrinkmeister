@@ -5,6 +5,46 @@ from wand.image import Image
 from hashlib import md5
 from django.core.cache import cache
 from django.core import signing
+from django.conf import settings
+import re
+
+THUMBNAIL_SERVER_URL = getattr(settings, 'THUMBNAIL_SERVER_URL')
+
+class ImageLikeObject(Object):
+    '''
+    Image object imitator for templates
+    provides easy replacement for easy_thumbnail
+    '''
+    def _init__(self, url, width, height):
+        super(ImageLikeObject, self).__init__()
+        self.url = url
+        self.width = width
+        self.height = height
+
+def calculate_size(self, height, width, target_geometry):
+    '''
+    Calculate target image size based on proportion
+    target_w/target_h = source_w/source_h and preserve aspect ratio
+
+    If aspect ratio (target_w/target_h) < (source_w/source_h) ignore target_h, and ignore target_w otherwise
+    '''
+    geometry_splitted = geometry.strip().split('x')
+    target_w = int(geometry_splitted[0] or 0)
+    try:
+        ystr = re.sub("\D", "", geometry_splitted[1]) # Remove possible ImageMagick options from end of the string
+        target_h = int(ystr or 0)
+    except IndexError:
+        target_h = 0
+
+    if not target_h and not target_w:
+        raise Exception('wrong geometry')
+
+    if (target_h and ((target_w/target_h) < (width/heigt))) or not target_h:
+        target_h = int(target_w * height / float(width))
+    else:
+        target_w = int(target_h * width / float(height))
+        
+    return (target_w, target_h)
 
 def image_from_url(url):
     '''
@@ -67,5 +107,11 @@ def shrink_and_store(img, size, target_bucket, target_key, cache_key):
     }
     cache.set(cache_key, image_info)
     return image_info
+
+def get_thumbnail(img, target_geometry):
+    width, height = calculate_size(img.width, img.height, target_geometry)
+    #TODO Find how to get bucket/key from image object
+    url = THUMBNAIL_SERVER_URL + generate_protected_request('bucketname', 'key',target_geometry)
+    return ImageLikeObject(url, width, height)
 
 
