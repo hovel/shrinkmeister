@@ -39,7 +39,7 @@ def calculate_size(self, height, width, target_geometry):
     if not target_h and not target_w:
         raise Exception('wrong geometry')
 
-    if (target_h and ((target_w/target_h) < (width/heigt))) or not target_h:
+    if not target_h or (target_h and ((target_w/target_h) < (width/heigt))):
         target_h = int(target_w * height / float(width))
     else:
         target_w = int(target_h * width / float(height))
