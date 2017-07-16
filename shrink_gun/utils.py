@@ -36,25 +36,38 @@ class ImageLikeObject(object):
         self.height = height
 
 
-def parse_geometry(geometry, ratio=None):
-    m = GEOMETRY_PATTERN.match(geometry)
-    if not m:
+def calc_thumb_size(image_width, image_height, geometry_string):
+    geometry_match = GEOMETRY_PATTERN.match(geometry_string)
+    if not geometry_match:
         raise ThumbnailError('Wrong geometry')
-    x = m.group('x')
-    y = m.group('y')
-    if x is None and y is None:
+
+    thumb_width_max = float(geometry_match.group('x') or 0)
+    thumb_height_max = float(geometry_match.group('y') or 0)
+
+    if not thumb_width_max and not thumb_height_max:
         raise ThumbnailError('Wrong geometry')
-    if x is not None:
-        x = int(x)
-    if y is not None:
-        y = int(y)
-    if ratio is not None:
-        ratio = float(ratio)
-        if x is None:
-            x = int(round(y * ratio)) or 1
-        elif y is None:
-            y = int(round(x / ratio)) or 1
-    return x, y
+
+    image_width = float(image_width)
+    image_height = float(image_height)
+
+    ratio = image_width / image_height
+
+    if thumb_width_max and thumb_height_max:
+        scaling_factor = min(thumb_width_max / image_width,
+                             thumb_height_max / image_height)
+        thumb_width = image_width * scaling_factor
+        thumb_height = image_height * scaling_factor
+    elif not thumb_width_max:
+        thumb_height = thumb_height_max
+        thumb_width = thumb_height * ratio
+    elif not thumb_height_max:
+        thumb_width = thumb_width_max
+        thumb_height = thumb_width / ratio
+
+    thumb_width = int(round(thumb_width)) or 1
+    thumb_height = int(round(thumb_height)) or 1
+
+    return thumb_width, thumb_height
 
 
 def image_from_url(url):
@@ -96,13 +109,12 @@ def generate_thumbnail_url(**url_data):
 
 def shrink_and_store(img, cache_key, geometry_string, **options):
     """
-    Sample image to target size,
-    Store it on S3
-
-    For 'size' provide imagemagick options
-    http://www.imagemagick.org/script/command-line-processing.php#geometry
+    Resize image
+    Store thumbnail on S3
     """
-    img.transform(resize=geometry_string)
+    thumb_width, thumb_height = calc_thumb_size(img.width, img.height,
+                                                geometry_string)
+    img.resize(thumb_width, thumb_height)
     thumb_filename = '{}.{}'.format(cache_key, img.format)
     client = boto3.client('s3')
     # TODO Extra Args should be passed via arguments?
@@ -134,8 +146,8 @@ def get_thumbnail(file_, geometry_string, **options):
     if not hasattr(file_, 'width') or not hasattr(file_, 'height'):
         raise ThumbnailError('Wrong image instance')
 
-    ratio = float(file_.width) / file_.height
-    thumb_width, thumb_height = parse_geometry(geometry_string, ratio)
+    thumb_width, thumb_height = calc_thumb_size(file_.width, file_.height,
+                                                geometry_string)
 
     url_data = {
         'bucket': bucket,
