@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+from django.conf import settings
 from django.core import signing
 from django.core.cache import cache
 from django.http import HttpResponseRedirect, Http404
@@ -36,7 +37,8 @@ class ThumbnailFromHash(RedirectView):
 
     def get_redirect_url(self, *args, **kwargs):
         try:
-            data = signing.loads(kwargs['hash'])
+            data = signing.loads(kwargs['hash'],
+                                 key=settings.THUMBNAIL_SECRET_KEY)
         except Exception as e:
             raise Http404()
 

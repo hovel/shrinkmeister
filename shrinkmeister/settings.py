@@ -13,7 +13,7 @@ SECRET_KEY = '(v2&kwia@=fyi-a%(z-nunvnb496reub&ae+rpw&efp=40w5aa'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["127.0.0.1", "eq5aahk9w5.execute-api.us-west-1.amazonaws.com"]
+ALLOWED_HOSTS = [os.environ.get('ALLOWED_HOST', '127.0.0.1')]
 
 
 # Application definition
@@ -87,12 +87,17 @@ STATIC_URL = '/static/'
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
-        'LOCATION': '127.0.0.1:11211',
+        'LOCATION': os.environ.get('CACHE_LOCATION', '127.0.0.1:11211'),
+        'TIMEOUT': os.environ.get('CACHE_TIMEOUT', 60 * 60 * 24 * 7),  # 7 days
+        'KEY_PREFIX': os.environ.get('CACHE_KEY_PREFIX', 'shrinkmeister'),
+        'OPTIONS': {
+            'MAX_ENTRIES': os.environ.get('CACHE_MAX_EXNTRIES', 30000)
+        },
     }
 }
 
 # SHRINKMEISTER SETTINGS
 
-THUMBNAIL_SERVER_URL = ''
-THUMBNAIL_BUCKET = 'shrinktest'
-THUMBNAIL_TTL = 604800 # 7 days
+THUMBNAIL_SECRET_KEY = os.environ['THUMBNAIL_SECRET_KEY']
+THUMBNAIL_SERVER_URL = os.environ['THUMBNAIL_SERVER_URL']
+THUMBNAIL_BUCKET = os.environ['THUMBNAIL_BUCKET']

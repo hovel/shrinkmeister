@@ -1,4 +1,4 @@
 django
 zappa
 wand
-boto
+boto3

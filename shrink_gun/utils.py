@@ -102,7 +102,7 @@ def generate_cache_key(url='', bucket='', key='', geometry_string='', extra='',
 
 
 def generate_thumbnail_url(**url_data):
-    signed_data = signing.dumps(url_data)
+    signed_data = signing.dumps(url_data, key=settings.THUMBNAIL_SECRET_KEY)
     url = urljoin(urljoin(THUMBNAIL_SERVER_URL, 'hash/'), signed_data)
     return url
 
