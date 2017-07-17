@@ -7,4 +7,4 @@ from shrink_gun.utils import get_thumbnail
 
 register = template.Library()
 
-register.simple_tag(get_thumbnail)
+register.simple_tag(func=get_thumbnail, name='thumbnail')
