@@ -2,3 +2,4 @@ django
 zappa
 wand
 boto3
+python-memcached

@@ -90,9 +90,9 @@ CACHES = {
         'LOCATION': os.environ.get('CACHE_LOCATION', '127.0.0.1:11211'),
         'TIMEOUT': os.environ.get('CACHE_TIMEOUT', 60 * 60 * 24 * 7),  # 7 days
         'KEY_PREFIX': os.environ.get('CACHE_KEY_PREFIX', 'shrinkmeister'),
-        'OPTIONS': {
-            'MAX_ENTRIES': os.environ.get('CACHE_MAX_EXNTRIES', 30000)
-        },
+        # 'OPTIONS': {
+        #     'MAX_ENTRIES': os.environ.get('CACHE_MAX_ENTRIES', 30000)
+        # },
     }
 }
 
