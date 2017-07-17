@@ -42,10 +42,13 @@ class ThumbnailFromHash(RedirectView):
         except Exception as e:
             raise Http404()
 
-        bucket = data['bucket']
-        key = data['key']
-        geometry_string = data['geometry_string']
-        options = data['options']
+        try:
+            bucket = data['bucket']
+            key = data['key']
+            geometry_string = data['geometry_string']
+            options = data['options']
+        except KeyError:
+            raise Http404()
 
         cache_key = generate_cache_key(
             bucket=bucket, key=key, geometry_string=geometry_string, **options)

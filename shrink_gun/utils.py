@@ -10,7 +10,6 @@ from django.core import signing
 from django.core.cache import cache
 from django.core.files.base import ContentFile
 from django.utils.six import string_types
-from django.utils.six.moves.urllib.parse import urljoin
 from django.utils.six.moves.urllib.request import urlopen
 from wand.image import Image
 
@@ -106,7 +105,8 @@ def generate_cache_key(url='', bucket='', key='', geometry_string='', extra='',
 
 def generate_thumbnail_url(**url_data):
     signed_data = signing.dumps(url_data, key=settings.THUMBNAIL_SECRET_KEY)
-    url = urljoin(urljoin(THUMBNAIL_SERVER_URL, 'hash/'), signed_data)
+    url = '/'.join(part.rstrip('/') for part in
+                   [THUMBNAIL_SERVER_URL, 'hash', signed_data])
     return url
 
 
