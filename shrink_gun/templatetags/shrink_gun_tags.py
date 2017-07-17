@@ -12,3 +12,8 @@ if django.VERSION >= (1, 9):
     register.simple_tag(func=get_thumbnail, name='thumbnail')
 else:
     register.assignment_tag(func=get_thumbnail, name='thumbnail')
+
+
+@register.simple_tag
+def endthumbnail():
+    return ''
