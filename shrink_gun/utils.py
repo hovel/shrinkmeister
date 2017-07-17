@@ -9,6 +9,7 @@ from django.conf import settings
 from django.core import signing
 from django.core.cache import cache
 from django.core.files.base import ContentFile
+from django.utils.six import string_types
 from django.utils.six.moves.urllib.parse import urljoin
 from django.utils.six.moves.urllib.request import urlopen
 from wand.image import Image
@@ -97,6 +98,8 @@ def generate_cache_key(url='', bucket='', key='', geometry_string='', extra='',
     to 'extra' for better detection.
     """
     # TODO options
+    for param in [url, bucket, key, geometry_string, extra]:
+        assert isinstance(param, string_types)
     md = md5(url + bucket + key + geometry_string + extra)
     return md.hexdigest()
 
@@ -131,11 +134,14 @@ def shrink_and_store(img, cache_key, geometry_string, **options):
 
 
 def get_thumbnail(file_, geometry_string, **options):
-    if not hasattr(file_, 'key'):
+    storage_file = getattr(file_, 'file', None)
+    key_object = getattr(storage_file, 'key', None)
+
+    if not key_object:
         raise ThumbnailError('Only S3 objects are supported')
 
-    bucket = file_.key.bucket
-    key = file_.key.key
+    bucket = key_object.bucket.name
+    key = key_object.key
 
     cache_key = generate_cache_key(
         bucket=bucket, key=key, geometry_string=geometry_string, **options)
