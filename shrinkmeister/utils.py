@@ -125,9 +125,10 @@ def shrink_and_store(img, cache_key, geometry_string, **options):
         Fileobj=ContentFile(img.make_blob(), name=thumb_filename),
         Bucket=THUMBNAIL_BUCKET, Key=thumb_filename,
         ExtraArgs={'StorageClass': 'REDUCED_REDUNDANCY'})
-    url = client.generate_presigned_url(ClientMethod='get_object',
-                                        Params={'Bucket': THUMBNAIL_BUCKET,
-                                                'Key': thumb_filename})
+    url = client.generate_presigned_url(
+        ClientMethod='get_object',
+        Params={'Bucket': THUMBNAIL_BUCKET, 'Key': thumb_filename},
+        ExpiresIn=settings.THUMBNAIL_TTL)
     thumb = ImageLikeObject(url=url, width=img.width, height=img.height)
     cache.set(cache_key, thumb)
     return thumb

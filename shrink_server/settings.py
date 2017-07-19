@@ -83,21 +83,21 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
+# SHRINKMEISTER SETTINGS
+THUMBNAIL_SECRET_KEY = os.environ['THUMBNAIL_SECRET_KEY']
+THUMBNAIL_SERVER_URL = os.environ['THUMBNAIL_SERVER_URL']
+THUMBNAIL_BUCKET = os.environ['THUMBNAIL_BUCKET']
+THUMBNAIL_TTL = os.environ.get('THUMBNAIL_TTL', 60 * 60 * 24 * 7),  # 7 days
+
 # Cache (Used to store thumbnails information):
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
         'LOCATION': os.environ.get('CACHE_LOCATION', '127.0.0.1:11211'),
-        'TIMEOUT': os.environ.get('CACHE_TIMEOUT', 60 * 60 * 24 * 7),  # 7 days
+        'TIMEOUT': THUMBNAIL_TTL,
         'KEY_PREFIX': os.environ.get('CACHE_KEY_PREFIX', 'shrinkmeister'),
         # 'OPTIONS': {
         #     'MAX_ENTRIES': os.environ.get('CACHE_MAX_ENTRIES', 30000)
         # },
     }
 }
-
-# SHRINKMEISTER SETTINGS
-
-THUMBNAIL_SECRET_KEY = os.environ['THUMBNAIL_SECRET_KEY']
-THUMBNAIL_SERVER_URL = os.environ['THUMBNAIL_SERVER_URL']
-THUMBNAIL_BUCKET = os.environ['THUMBNAIL_BUCKET']
