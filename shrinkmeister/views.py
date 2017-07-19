@@ -15,7 +15,7 @@ from utils import image_from_url, image_from_s3, shrink_and_store, \
 
 class ThumbnailFromURL(FormView):
     form_class = ImageURLForm
-    template_name = 'shrink_gun/url_form.html'
+    template_name = 'shrinkmeister/url_form.html'
     # TODO This should be readed from GET
     sample_geometry_string = '500x500'
 

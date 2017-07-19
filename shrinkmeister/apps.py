@@ -4,5 +4,5 @@ from __future__ import unicode_literals
 from django.apps import AppConfig
 
 
-class ShrinkGunConfig(AppConfig):
-    name = 'shrink_gun'
+class ShrinkmeisterConfig(AppConfig):
+    name = 'shrinkmeister'

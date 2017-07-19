@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 import django
 from django import template
 
-from shrink_gun.utils import get_thumbnail
+from shrinkmeister.utils import get_thumbnail
 
 register = template.Library()
 

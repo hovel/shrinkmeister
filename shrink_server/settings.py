@@ -23,7 +23,7 @@ INSTALLED_APPS = (
     'django.contrib.contenttypes',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'shrink_gun'
+    'shrinkmeister',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -32,7 +32,7 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.security.SecurityMiddleware',
 )
 
-ROOT_URLCONF = 'shrinkmeister.urls'
+ROOT_URLCONF = 'shrink_server.urls'
 
 TEMPLATES = [
     {
@@ -50,7 +50,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'shrinkmeister.wsgi.application'
+WSGI_APPLICATION = 'shrink_server.wsgi.application'
 
 
 # Database
