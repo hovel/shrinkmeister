@@ -59,7 +59,7 @@ class ThumbnailFromHash(RedirectView):
             bucket = data['bucket']
             key = data['key']
             geometry_string = data['geometry_string']
-            options = data['options']
+            options = merge_with_defaults(data['options'])
         except KeyError:
             raise Http404()
 
