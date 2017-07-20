@@ -6,12 +6,12 @@ from django.core.cache import cache
 from shrinkmeister.engine import Engine
 from shrinkmeister.utils import generate_cache_key, generate_thumbnail_url
 from shrinkmeister.helpers import ThumbnailError, ImageLikeObject, \
-    filter_options
+    merge_with_defaults
 from shrinkmeister.parsers import parse_geometry
 
 
 def get_thumbnail(file_, geometry_string, **options):
-    options = filter_options(options)
+    options = merge_with_defaults(options)
 
     storage_file = getattr(file_, 'file', None)
     key_object = getattr(storage_file, 'key', None)

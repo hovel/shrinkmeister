@@ -86,10 +86,19 @@ class ImageLikeObject(object):
         self.height = height
 
 
-def filter_options(options):
-    # TODO more options
-    crop = 'crop'
-    if crop in options:
-        return {crop: options[crop]}
-    else:
-        return {}
+def merge_with_defaults(options):
+    # FIXME not all options are supported!
+    default_options = {
+        'format': 'JPEG',
+        'quality': 80,
+        'colorspace': 'RGB',
+        'upscale': False,
+        'crop': False,
+        'cropbox': None,
+        'rounded': None,
+        'padding': False,
+        'padding_color': '#ffffff',
+    }
+    merged = options
+    merged.update(default_options)
+    return merged
