@@ -87,7 +87,7 @@ STATIC_URL = '/static/'
 THUMBNAIL_SECRET_KEY = os.environ['THUMBNAIL_SECRET_KEY']
 THUMBNAIL_SERVER_URL = os.environ['THUMBNAIL_SERVER_URL']
 THUMBNAIL_BUCKET = os.environ['THUMBNAIL_BUCKET']
-THUMBNAIL_TTL = os.environ.get('THUMBNAIL_TTL', 60 * 60 * 24 * 7),  # 7 days
+THUMBNAIL_TTL = os.environ.get('THUMBNAIL_TTL', 60 * 60 * 24 * 7)  # 7 days
 
 # Cache (Used to store thumbnails information):
 CACHES = {
