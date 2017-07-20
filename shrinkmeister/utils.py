@@ -9,7 +9,7 @@ from django.core.files.base import ContentFile
 from django.utils.six.moves.urllib.request import urlopen
 from wand.image import Image
 
-from shrinkmeister.helpers import tokey, serialize
+from shrinkmeister.helpers import tokey, serialize, ImageLikeObject
 
 
 def image_from_url(url):
@@ -64,4 +64,5 @@ def store_thumbnail(thumbnail, cache_key):
                 'Key': thumb_filename},
         ExpiresIn=settings.THUMBNAIL_TTL)
 
-    cache.set(cache_key, thumbnail)
+    cache.set(cache_key, ImageLikeObject(
+        url=thumbnail.url, width=thumbnail.width, height=thumbnail.height))
