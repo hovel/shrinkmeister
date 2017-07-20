@@ -10,6 +10,7 @@ from django.views.generic.edit import FormView
 
 from forms import ImageURLForm
 from shrinkmeister.engine import Engine
+from shrinkmeister.helpers import merge_with_defaults
 from shrinkmeister.parsers import parse_geometry
 from shrinkmeister.utils import image_from_url, image_from_s3, \
     generate_cache_key, store_thumbnail
@@ -38,7 +39,7 @@ class ThumbnailFromURL(FormView):
         ratio = float(image.width) / image.height
         geometry = parse_geometry(self.sample_geometry_string, ratio)
 
-        thumbnail = engine.create(image, geometry, {})
+        thumbnail = engine.create(image, geometry, merge_with_defaults({}))
         store_thumbnail(thumbnail, cache_key)
 
         return HttpResponseRedirect(thumbnail.url)
