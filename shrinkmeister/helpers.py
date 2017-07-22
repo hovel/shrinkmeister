@@ -99,6 +99,6 @@ def merge_with_defaults(options):
         'padding': False,  # will be ignored
         'padding_color': '#ffffff',  # will be ignored
     }
-    for key, value in default_options:
+    for key, value in default_options.items():
         options.setdefault(key, value)
     return options
