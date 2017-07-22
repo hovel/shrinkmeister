@@ -9,11 +9,9 @@ from django.views.generic.base import RedirectView
 from django.views.generic.edit import FormView
 
 from forms import ImageURLForm
-from shrinkmeister.engine import Engine
 from shrinkmeister.helpers import merge_with_defaults
-from shrinkmeister.parsers import parse_geometry
 from shrinkmeister.utils import image_from_url, image_from_s3, \
-    generate_cache_key, store_thumbnail
+    generate_cache_key, store_thumbnail, create_thumbnail
 
 
 # TODO avoid code duplication
@@ -25,22 +23,26 @@ class ThumbnailFromURL(FormView):
     # TODO This should be readed from GET
     sample_geometry_string = '500x500'
 
+    def dispatch(self, request, *args, **kwargs):
+        if not settings.DEBUG:
+            raise Http404()
+        return super(ThumbnailFromURL, self).dispatch(request, *args, **kwargs)
+
     def form_valid(self, form):
         url = form.cleaned_data['url']
+        geometry_string = self.sample_geometry_string
+        options = merge_with_defaults({})
 
         cache_key = generate_cache_key(
-            url=url, geometry_string=self.sample_geometry_string)
-        thumbnail = cache.get(cache_key, None)
-        if thumbnail:
-            return thumbnail.url
+            url=url, geometry_string=geometry_string, **options)
 
-        engine = Engine()
+        cached_thumbnail = cache.get(cache_key, None)
+        if cached_thumbnail:
+            return cached_thumbnail.url
+
         image = image_from_url(url)
-        ratio = float(image.width) / image.height
-        geometry = parse_geometry(self.sample_geometry_string, ratio)
-
-        thumbnail = engine.create(image, geometry, merge_with_defaults({}))
-        store_thumbnail(thumbnail, cache_key)
+        thumbnail = create_thumbnail(image, geometry_string, options)
+        thumbnail.url = store_thumbnail(thumbnail, cache_key)
 
         return HttpResponseRedirect(thumbnail.url)
 
@@ -65,16 +67,13 @@ class ThumbnailFromHash(RedirectView):
 
         cache_key = generate_cache_key(
             bucket=bucket, key=key, geometry_string=geometry_string, **options)
-        thumbnail = cache.get(cache_key, None)
-        if thumbnail:
-            return thumbnail.url
 
-        engine = Engine()
+        cached_thumbnail = cache.get(cache_key, None)
+        if cached_thumbnail:
+            return cached_thumbnail.url
+
         image = image_from_s3(bucket, key)
-        ratio = float(image.width) / image.height
-        geometry = parse_geometry(geometry_string, ratio)
-
-        thumbnail = engine.create(image, geometry, options)
-        store_thumbnail(thumbnail, cache_key)
+        thumbnail = create_thumbnail(image, geometry_string, options)
+        thumbnail.url = store_thumbnail(thumbnail, cache_key)
 
         return thumbnail.url

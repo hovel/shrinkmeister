@@ -87,18 +87,18 @@ class ImageLikeObject(object):
 
 
 def merge_with_defaults(options):
-    # FIXME not all options are supported!
+    # FIXME several options will or may be ignored
     default_options = {
-        'format': 'JPEG',
-        'quality': 80,
-        'colorspace': 'RGB',
-        'upscale': False,
+        'format': 'JPEG',  # will be ignored (format is always preserved)
+        'quality': 80,  # will be ignored
+        'colorspace': 'RGB',  # will be ignored
+        'upscale': False,  # may be ignored
         'crop': False,
-        'cropbox': None,
-        'rounded': None,
-        'padding': False,
-        'padding_color': '#ffffff',
+        'cropbox': None,  # may be ignored
+        'rounded': None,  # will be ignored
+        'padding': False,  # will be ignored
+        'padding_color': '#ffffff',  # will be ignored
     }
-    merged = options
-    merged.update(default_options)
-    return merged
+    for key, value in default_options:
+        options.setdefault(key, value)
+    return options

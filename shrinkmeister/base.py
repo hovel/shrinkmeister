@@ -3,15 +3,14 @@ from __future__ import unicode_literals
 
 from django.core.cache import cache
 
-from shrinkmeister.engine import Engine
-from shrinkmeister.utils import generate_cache_key, generate_thumbnail_url
+from shrinkmeister.utils import generate_cache_key, \
+    generate_lazy_thumbnail_url, create_thumbnail
 from shrinkmeister.helpers import ThumbnailError, ImageLikeObject, \
     merge_with_defaults
-from shrinkmeister.parsers import parse_geometry
 
 
 def get_thumbnail(file_, geometry_string, **options):
-    options = merge_with_defaults(options)
+    """Return cached or lazy thumbnail"""
 
     storage_file = getattr(file_, 'file', None)
     key_object = getattr(storage_file, 'key', None)
@@ -20,29 +19,22 @@ def get_thumbnail(file_, geometry_string, **options):
 
     bucket = key_object.bucket.name
     key = key_object.key
+    options = merge_with_defaults(options)
 
     cache_key = generate_cache_key(
         bucket=bucket, key=key, geometry_string=geometry_string, **options)
-    thumbnail = cache.get(cache_key, None)
-    if thumbnail:
-        return thumbnail
+
+    cached_thumbnail = cache.get(cache_key, None)
+    if cached_thumbnail:
+        return cached_thumbnail
 
     if not hasattr(file_, 'width') or not hasattr(file_, 'height'):
         raise ThumbnailError('Wrong image instance')
 
-    engine = Engine()
     placeholder = ImageLikeObject('', file_.width, file_.height)
-    ratio = float(file_.width) / file_.height
-    geometry = parse_geometry(geometry_string, ratio)
+    lazy_thumbnail = create_thumbnail(placeholder, geometry_string, options)
+    lazy_thumbnail.url = generate_lazy_thumbnail_url(
+        bucket=bucket, key=key, geometry_string=geometry_string,
+        options=options)
 
-    thumbnail = engine.create(placeholder, geometry, options)
-
-    url_data = {
-        'bucket': bucket,
-        'key': key,
-        'geometry_string': geometry_string,
-        'options': options
-    }
-    thumbnail.url = generate_thumbnail_url(**url_data)
-
-    return thumbnail
+    return lazy_thumbnail

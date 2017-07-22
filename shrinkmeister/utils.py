@@ -9,7 +9,9 @@ from django.core.files.base import ContentFile
 from django.utils.six.moves.urllib.request import urlopen
 from wand.image import Image
 
+from shrinkmeister.engine import Engine
 from shrinkmeister.helpers import tokey, serialize, ImageLikeObject
+from shrinkmeister.parsers import parse_geometry
 
 
 def image_from_url(url):
@@ -40,29 +42,39 @@ def generate_cache_key(url='', bucket='', key='', geometry_string='',
     return cache_key
 
 
-def generate_thumbnail_url(**url_data):
+def generate_lazy_thumbnail_url(**url_data):
     signed_data = signing.dumps(url_data, key=settings.THUMBNAIL_SECRET_KEY)
     url = '/'.join(part.rstrip('/') for part in
                    [settings.THUMBNAIL_SERVER_URL, 'hash', signed_data])
     return url
 
 
+def create_thumbnail(image, geometry_string, options):
+    engine = Engine()
+    ratio = float(image.width) / image.height
+    geometry = parse_geometry(geometry_string, ratio)
+    thumbnail = engine.create(image, geometry, options)
+    return thumbnail
+
+
 def store_thumbnail(thumbnail, cache_key):
-    thumb_filename = '{}.{}'.format(cache_key, thumbnail.format)
+    thumbnail_filename = '{}.{}'.format(cache_key, thumbnail.format)
 
     client = boto3.client('s3')
 
     # TODO Extra Args should be passed via arguments?
     client.upload_fileobj(
-        Fileobj=ContentFile(thumbnail.make_blob(), name=thumb_filename),
-        Bucket=settings.THUMBNAIL_BUCKET, Key=thumb_filename,
+        Fileobj=ContentFile(thumbnail.make_blob(), name=thumbnail_filename),
+        Bucket=settings.THUMBNAIL_BUCKET, Key=thumbnail_filename,
         ExtraArgs={'StorageClass': 'REDUCED_REDUNDANCY'})
 
-    thumbnail.url = client.generate_presigned_url(
+    thumbnail_url = client.generate_presigned_url(
         ClientMethod='get_object',
         Params={'Bucket': settings.THUMBNAIL_BUCKET,
-                'Key': thumb_filename},
+                'Key': thumbnail_filename},
         ExpiresIn=settings.THUMBNAIL_TTL)
 
     cache.set(cache_key, ImageLikeObject(
-        url=thumbnail.url, width=thumbnail.width, height=thumbnail.height))
+        url=thumbnail_url, width=thumbnail.width, height=thumbnail.height))
+
+    return thumbnail_url
