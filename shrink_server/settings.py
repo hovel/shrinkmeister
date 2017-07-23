@@ -11,7 +11,8 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = os.environ['THUMBNAIL_SECRET_KEY']
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = bool(os.environ.get('DEBUG', False)=='True')
+#DEBUG = True
 
 ALLOWED_HOSTS = [os.environ.get('ALLOWED_HOST', '127.0.0.1')]
 
@@ -52,18 +53,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'shrink_server.wsgi.application'
 
-
-# Database
-# https://docs.djangoproject.com/en/1.8/ref/settings/#databases
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-    }
-}
-
-
 # Internationalization
 # https://docs.djangoproject.com/en/1.8/topics/i18n/
 
@@ -88,6 +77,7 @@ THUMBNAIL_SECRET_KEY = SECRET_KEY
 THUMBNAIL_SERVER_URL = os.environ['THUMBNAIL_SERVER_URL']
 THUMBNAIL_BUCKET = os.environ['THUMBNAIL_BUCKET']
 THUMBNAIL_TTL = os.environ.get('THUMBNAIL_TTL', 60 * 60 * 24 * 7)  # 7 days
+S3_ENDPOINT = os.environ.get('S3_ENDPOINT', None)
 
 # Cache (Used to store thumbnails information):
 CACHES = {

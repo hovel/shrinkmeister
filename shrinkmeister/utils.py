@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 
 import boto3
+from botocore.exceptions import ClientError
 from django.conf import settings
 from django.core import signing
 from django.core.cache import cache
@@ -57,16 +58,25 @@ def create_thumbnail(image, geometry_string, options):
     return thumbnail
 
 
-def store_thumbnail(thumbnail, cache_key):
+def store_thumbnail(thumbnail, cache_key, endpoint_url=None):
     thumbnail_filename = '{}.{}'.format(cache_key, thumbnail.format)
 
-    client = boto3.client('s3')
+    import botocore.session
+    from botocore.client import Config
+
+    client = boto3.client('s3', endpoint_url=endpoint_url)
 
     # TODO Extra Args should be passed via arguments?
-    client.upload_fileobj(
-        Fileobj=ContentFile(thumbnail.make_blob(), name=thumbnail_filename),
-        Bucket=settings.THUMBNAIL_BUCKET, Key=thumbnail_filename,
-        ExtraArgs={'StorageClass': 'REDUCED_REDUNDANCY'})
+    try:
+        client.upload_fileobj(
+            Fileobj=ContentFile(thumbnail.make_blob(), name=thumbnail_filename),
+            Bucket=settings.THUMBNAIL_BUCKET, Key=thumbnail_filename,
+            ExtraArgs={'StorageClass': 'REDUCED_REDUNDANCY'})
+    except ClientError as e:
+        if e.response['Error']['Code'] == "NoSuchBucket":
+            client.create_bucket(Bucket=settings.THUMBNAIL_BUCKET)
+            return store_thumbnail(thumbnail, cache_key, endpoint_url)
+        raise e
 
     thumbnail_url = client.generate_presigned_url(
         ClientMethod='get_object',

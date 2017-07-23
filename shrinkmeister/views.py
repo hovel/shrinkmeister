@@ -42,7 +42,7 @@ class ThumbnailFromURL(FormView):
 
         image = image_from_url(url)
         thumbnail = create_thumbnail(image, geometry_string, options)
-        thumbnail.url = store_thumbnail(thumbnail, cache_key)
+        thumbnail.url = store_thumbnail(thumbnail, cache_key, settings.S3_ENDPOINT)
 
         return HttpResponseRedirect(thumbnail.url)
 
@@ -74,6 +74,6 @@ class ThumbnailFromHash(RedirectView):
 
         image = image_from_s3(bucket, key)
         thumbnail = create_thumbnail(image, geometry_string, options)
-        thumbnail.url = store_thumbnail(thumbnail, cache_key)
+        thumbnail.url = store_thumbnail(thumbnail, cache_key, settings.S3_ENDPOINT)
 
         return thumbnail.url
