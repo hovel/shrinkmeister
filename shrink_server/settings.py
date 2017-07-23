@@ -8,7 +8,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/1.8/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '(v2&kwia@=fyi-a%(z-nunvnb496reub&ae+rpw&efp=40w5aa'
+SECRET_KEY = os.environ['THUMBNAIL_SECRET_KEY']
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
@@ -84,7 +84,7 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 # SHRINKMEISTER SETTINGS
-THUMBNAIL_SECRET_KEY = os.environ['THUMBNAIL_SECRET_KEY']
+THUMBNAIL_SECRET_KEY = SECRET_KEY
 THUMBNAIL_SERVER_URL = os.environ['THUMBNAIL_SERVER_URL']
 THUMBNAIL_BUCKET = os.environ['THUMBNAIL_BUCKET']
 THUMBNAIL_TTL = os.environ.get('THUMBNAIL_TTL', 60 * 60 * 24 * 7)  # 7 days

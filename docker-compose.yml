@@ -7,6 +7,9 @@ web:
   environment:
     - AWS_ACCESS_KEY_ID
     - AWS_SECRET_ACCESS_KEY
+    - THUMBNAIL_SECRET_KEY
+    - THUMBNAIL_SERVER_URL
+    - THUMBNAIL_BUCKET
   volumes:
     - ".:/root/src"
   command: bash -c "cd /root/src/ && python manage.py runserver 0.0.0.0:80"
