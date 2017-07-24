@@ -21,12 +21,13 @@ def get_thumbnail(file_, geometry_string, **options):
     key = key_object.key
     options = merge_with_defaults(options)
 
-    cache_key = generate_cache_key(
-        bucket=bucket, key=key, geometry_string=geometry_string, **options)
-
-    cached_thumbnail = cache.get(cache_key, None)
-    if cached_thumbnail:
-        return cached_thumbnail
+    # TODO to use cache here we need same config for "client" and "server"
+    # cache_key = generate_cache_key(
+    #     bucket=bucket, key=key, geometry_string=geometry_string, **options)
+    #
+    # cached_thumbnail = cache.get(cache_key, None)
+    # if cached_thumbnail:
+    #     return cached_thumbnail
 
     if not hasattr(file_, 'width') or not hasattr(file_, 'height'):
         raise ThumbnailError('Wrong image instance')
