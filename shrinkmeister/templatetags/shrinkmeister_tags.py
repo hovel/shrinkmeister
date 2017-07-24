@@ -49,7 +49,7 @@ class ThumbnailNode(Node):
 
     def render(self, context):
         try:
-            self._render(context)
+            return self._render(context)
         except Exception:
             return self.nodelist_empty.render(context)
 
