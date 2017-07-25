@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 
 import boto3
+from copy import copy
 from botocore.exceptions import ClientError
 from django.conf import settings
 from django.core import signing
@@ -13,6 +14,12 @@ from wand.image import Image
 from shrinkmeister.engine import Engine
 from shrinkmeister.helpers import tokey, serialize, ImageLikeObject
 from shrinkmeister.parsers import parse_geometry
+
+# Any function (in any app) from this module will
+# use key prefix shrinkmeister
+# so, you can use one shrinkmeister app for all of your apps
+cache = copy(cache)
+cache.key_prefix = 'shrinkmeister'
 
 
 def image_from_url(url):

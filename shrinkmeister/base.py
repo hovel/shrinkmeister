@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
-
+from copy import copy
 from django.core.cache import cache
 
 from shrinkmeister.utils import generate_cache_key, \
@@ -8,6 +8,11 @@ from shrinkmeister.utils import generate_cache_key, \
 from shrinkmeister.helpers import ThumbnailError, ImageLikeObject, \
     merge_with_defaults
 
+# Any function (in any app) from this module will
+# use key prefix shrinkmeister
+# so, you can use one shrinkmeister app for all of your apps
+cache = copy(cache)
+cache.key_prefix = 'shrinkmeister'
 
 def get_thumbnail(file_, geometry_string, **options):
     """Return cached or lazy thumbnail"""
