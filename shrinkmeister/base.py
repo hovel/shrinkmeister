@@ -1,18 +1,15 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
-from copy import copy
-from django.core.cache import cache
 
-from shrinkmeister.utils import generate_cache_key, \
-    generate_lazy_thumbnail_url, create_thumbnail
+from django.core.cache import caches
+
 from shrinkmeister.helpers import ThumbnailError, ImageLikeObject, \
     merge_with_defaults
+from shrinkmeister.utils import generate_cache_key, \
+    generate_lazy_thumbnail_url, create_thumbnail
 
-# Any function (in any app) from this module will
-# use key prefix shrinkmeister
-# so, you can use one shrinkmeister app for all of your apps
-cache = copy(cache)
-cache.key_prefix = 'shrinkmeister'
+shrinkmeister_cache = caches['shrinkmeister']
+
 
 def get_thumbnail(file_, geometry_string, **options):
     """Return cached or lazy thumbnail"""
@@ -26,13 +23,12 @@ def get_thumbnail(file_, geometry_string, **options):
     key = key_object.key
     options = merge_with_defaults(options)
 
-    # TODO to use cache here we need same config for "client" and "server"
-    # cache_key = generate_cache_key(
-    #     bucket=bucket, key=key, geometry_string=geometry_string, **options)
-    #
-    # cached_thumbnail = cache.get(cache_key, None)
-    # if cached_thumbnail:
-    #     return cached_thumbnail
+    cache_key = generate_cache_key(
+        bucket=bucket, key=key, geometry_string=geometry_string, **options)
+
+    cached_thumbnail = shrinkmeister_cache.get(cache_key, None)
+    if cached_thumbnail:
+        return cached_thumbnail
 
     if not hasattr(file_, 'width') or not hasattr(file_, 'height'):
         raise ThumbnailError('Wrong image instance')

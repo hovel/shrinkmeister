@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 
 from django.conf import settings
 from django.core import signing
-from django.core.cache import cache
+from django.core.cache import caches
 from django.http import HttpResponseRedirect, Http404
 from django.views.generic.base import RedirectView
 from django.views.generic.edit import FormView
@@ -12,6 +12,8 @@ from forms import ImageURLForm
 from shrinkmeister.helpers import merge_with_defaults
 from shrinkmeister.utils import image_from_url, image_from_s3, \
     generate_cache_key, store_thumbnail, create_thumbnail
+
+shrinkmeister_cache = caches['shrinkmeister']
 
 
 # TODO avoid code duplication
@@ -36,13 +38,14 @@ class ThumbnailFromURL(FormView):
         cache_key = generate_cache_key(
             url=url, geometry_string=geometry_string, **options)
 
-        cached_thumbnail = cache.get(cache_key, None)
+        cached_thumbnail = shrinkmeister_cache.get(cache_key, None)
         if cached_thumbnail:
             return cached_thumbnail.url
 
         image = image_from_url(url)
         thumbnail = create_thumbnail(image, geometry_string, options)
-        thumbnail.url = store_thumbnail(thumbnail, cache_key, settings.S3_ENDPOINT)
+        thumbnail.url = store_thumbnail(thumbnail, cache_key,
+                                        settings.S3_ENDPOINT)
 
         return HttpResponseRedirect(thumbnail.url)
 
@@ -68,12 +71,13 @@ class ThumbnailFromHash(RedirectView):
         cache_key = generate_cache_key(
             bucket=bucket, key=key, geometry_string=geometry_string, **options)
 
-        cached_thumbnail = cache.get(cache_key, None)
+        cached_thumbnail = shrinkmeister_cache.get(cache_key, None)
         if cached_thumbnail:
             return cached_thumbnail.url
 
         image = image_from_s3(bucket, key)
         thumbnail = create_thumbnail(image, geometry_string, options)
-        thumbnail.url = store_thumbnail(thumbnail, cache_key, settings.S3_ENDPOINT)
+        thumbnail.url = store_thumbnail(thumbnail, cache_key,
+                                        settings.S3_ENDPOINT)
 
         return thumbnail.url

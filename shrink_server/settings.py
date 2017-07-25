@@ -84,10 +84,12 @@ CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
         'LOCATION': os.environ.get('CACHE_LOCATION', '127.0.0.1:11211'),
+        'KEY_PREFIX': '',
+    },
+    'shrinkmeister': {
+        'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+        'LOCATION': os.environ.get('CACHE_LOCATION', '127.0.0.1:11211'),
         'TIMEOUT': THUMBNAIL_TTL,
         'KEY_PREFIX': os.environ.get('CACHE_KEY_PREFIX', 'shrinkmeister'),
-        # 'OPTIONS': {
-        #     'MAX_ENTRIES': os.environ.get('CACHE_MAX_ENTRIES', 30000)
-        # },
     }
 }

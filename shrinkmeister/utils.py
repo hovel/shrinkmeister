@@ -2,11 +2,10 @@
 from __future__ import unicode_literals
 
 import boto3
-from copy import copy
 from botocore.exceptions import ClientError
 from django.conf import settings
 from django.core import signing
-from django.core.cache import cache
+from django.core.cache import caches
 from django.core.files.base import ContentFile
 from django.utils.six.moves.urllib.request import urlopen
 from wand.image import Image
@@ -15,11 +14,7 @@ from shrinkmeister.engine import Engine
 from shrinkmeister.helpers import tokey, serialize, ImageLikeObject
 from shrinkmeister.parsers import parse_geometry
 
-# Any function (in any app) from this module will
-# use key prefix shrinkmeister
-# so, you can use one shrinkmeister app for all of your apps
-cache = copy(cache)
-cache.key_prefix = 'shrinkmeister'
+shrinkmeister_cache = caches['shrinkmeister']
 
 
 def image_from_url(url):
@@ -68,15 +63,13 @@ def create_thumbnail(image, geometry_string, options):
 def store_thumbnail(thumbnail, cache_key, endpoint_url=None):
     thumbnail_filename = '{}.{}'.format(cache_key, thumbnail.format)
 
-    import botocore.session
-    from botocore.client import Config
-
     client = boto3.client('s3', endpoint_url=endpoint_url)
 
     # TODO Extra Args should be passed via arguments?
     try:
         client.upload_fileobj(
-            Fileobj=ContentFile(thumbnail.make_blob(), name=thumbnail_filename),
+            Fileobj=ContentFile(thumbnail.make_blob(),
+                                name=thumbnail_filename),
             Bucket=settings.THUMBNAIL_BUCKET, Key=thumbnail_filename,
             ExtraArgs={'StorageClass': 'REDUCED_REDUNDANCY'})
     except ClientError as e:
@@ -91,7 +84,7 @@ def store_thumbnail(thumbnail, cache_key, endpoint_url=None):
                 'Key': thumbnail_filename},
         ExpiresIn=settings.THUMBNAIL_TTL)
 
-    cache.set(cache_key, ImageLikeObject(
+    shrinkmeister_cache.set(cache_key, ImageLikeObject(
         url=thumbnail_url, width=thumbnail.width, height=thumbnail.height))
 
     return thumbnail_url
