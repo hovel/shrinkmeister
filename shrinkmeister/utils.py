@@ -8,7 +8,6 @@ from django.core import signing
 from django.core.cache import caches
 from django.core.files.base import ContentFile
 from django.utils.six.moves.urllib.request import urlopen
-from wand.image import Image
 
 from shrinkmeister.engine import Engine
 from shrinkmeister.helpers import tokey, serialize, ImageLikeObject
@@ -21,6 +20,7 @@ def image_from_url(url):
     """
     Return Wand Image from target url
     """
+    from wand.image import Image
     stream = urlopen(url)
     img = Image(file=stream)
     return img
@@ -30,6 +30,7 @@ def image_from_s3(bucket, key):
     """
     Return Wand Image from S3 bucket/key pair
     """
+    from wand.image import Image
     client = boto3.client('s3')
     stream = client.get_object(Bucket=bucket, Key=key)
     img = Image(file=stream['Body'])
