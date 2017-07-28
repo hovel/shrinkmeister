@@ -10,11 +10,11 @@ from django.views.generic.edit import FormView
 
 from forms import ImageURLForm
 from shrinkmeister.helpers import merge_with_defaults
-from shrinkmeister.utils import image_from_url, image_from_s3, \
-    generate_cache_key, store_thumbnail, create_thumbnail
+from shrinkmeister.utils import generate_cache_key, store_thumbnail, create_thumbnail
+from shrinkmeister._utils import image_from_url, image_from_s3
 
 shrinkmeister_cache = caches['shrinkmeister']
-
+s3_endpoint_url = getattr(settings, 'AWS_S3_HOST', None)
 
 # TODO avoid code duplication
 
@@ -45,7 +45,7 @@ class ThumbnailFromURL(FormView):
         image = image_from_url(url)
         thumbnail = create_thumbnail(image, geometry_string, options)
         thumbnail.url = store_thumbnail(thumbnail, cache_key,
-                                        settings.S3_ENDPOINT)
+                                        s3_endpoint_url)
 
         return HttpResponseRedirect(thumbnail.url)
 
@@ -78,6 +78,6 @@ class ThumbnailFromHash(RedirectView):
         image = image_from_s3(bucket, key)
         thumbnail = create_thumbnail(image, geometry_string, options)
         thumbnail.url = store_thumbnail(thumbnail, cache_key,
-                                        settings.S3_ENDPOINT)
+                                        s3_endpoint_url)
 
         return thumbnail.url

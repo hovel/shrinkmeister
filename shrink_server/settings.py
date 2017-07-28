@@ -14,7 +14,7 @@ SECRET_KEY = os.environ['THUMBNAIL_SECRET_KEY']
 DEBUG = bool(os.environ.get('DEBUG', False)=='True')
 #DEBUG = True
 
-ALLOWED_HOSTS = [os.environ.get('ALLOWED_HOST', '127.0.0.1')]
+ALLOWED_HOSTS = [os.environ.get('ALLOWED_HOST', '127.0.0.1'), 'localhost']
 
 
 # Application definition
@@ -66,6 +66,7 @@ USE_L10N = True
 
 USE_TZ = True
 
+DATABASES = {}
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.8/howto/static-files/
@@ -77,7 +78,8 @@ THUMBNAIL_SECRET_KEY = SECRET_KEY
 THUMBNAIL_SERVER_URL = os.environ['THUMBNAIL_SERVER_URL']
 THUMBNAIL_BUCKET = os.environ['THUMBNAIL_BUCKET']
 THUMBNAIL_TTL = os.environ.get('THUMBNAIL_TTL', 60 * 60 * 24 * 7)  # 7 days
-S3_ENDPOINT = os.environ.get('S3_ENDPOINT', None)
+AWS_S3_HOST = os.environ.get('AWS_S3_HOST', None)
+THUMBNAIL_CACHE_NAME = os.environ.get('THUMBNAIL_CACHE_NAME', 'shrinkmeister')
 
 # Cache (Used to store thumbnails information):
 CACHES = {
@@ -86,7 +88,7 @@ CACHES = {
         'LOCATION': os.environ.get('CACHE_LOCATION', '127.0.0.1:11211'),
         'KEY_PREFIX': '',
     },
-    'shrinkmeister': {
+    THUMBNAIL_CACHE_NAME: {
         'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
         'LOCATION': os.environ.get('CACHE_LOCATION', '127.0.0.1:11211'),
         'TIMEOUT': THUMBNAIL_TTL,

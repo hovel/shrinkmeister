@@ -8,32 +8,12 @@ from django.core import signing
 from django.core.cache import caches
 from django.core.files.base import ContentFile
 from django.utils.six.moves.urllib.request import urlopen
-from wand.image import Image
 
 from shrinkmeister.engine import Engine
 from shrinkmeister.helpers import tokey, serialize, ImageLikeObject
 from shrinkmeister.parsers import parse_geometry
 
-shrinkmeister_cache = caches['shrinkmeister']
-
-
-def image_from_url(url):
-    """
-    Return Wand Image from target url
-    """
-    stream = urlopen(url)
-    img = Image(file=stream)
-    return img
-
-
-def image_from_s3(bucket, key):
-    """
-    Return Wand Image from S3 bucket/key pair
-    """
-    client = boto3.client('s3')
-    stream = client.get_object(Bucket=bucket, Key=key)
-    img = Image(file=stream['Body'])
-    return img
+shrinkmeister_cache = caches[getattr(settings, 'THUMBNAIL_CACHE_NAME')]
 
 
 def generate_cache_key(url='', bucket='', key='', geometry_string='',
@@ -47,7 +27,7 @@ def generate_cache_key(url='', bucket='', key='', geometry_string='',
 
 def generate_lazy_thumbnail_url(**url_data):
     signed_data = signing.dumps(url_data, key=settings.THUMBNAIL_SECRET_KEY)
-    url = '/'.join(part.rstrip('/') for part in
+    url = '//'+'/'.join(part.rstrip('/') for part in
                    [settings.THUMBNAIL_SERVER_URL, 'hash', signed_data])
     return url
 

@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 import hashlib
 import json
 import math
+from collections import namedtuple
 
 from django.utils.encoding import force_text
 
@@ -71,11 +72,19 @@ class ImageLikeObject(object):
     provides easy replacement for easy_thumbnail
     """
 
-    def __init__(self, url, width, height):
+    def __init__(self, url, width, height, format='jpeg', storage=None):
         super(ImageLikeObject, self).__init__()
         self.url = url
         self.width = width
         self.height = height
+        self.format = format
+        if storage:
+            self.file = namedtuple('file', ['storage'])
+            self.file.key = namedtuple('key', ['bucket', 'key'])
+            self.file.key.bucket = namedtuple('bucket', ['name'])
+            self.file.key.key = storage['key']
+            self.file.key.bucket.name = storage['bucket']
+
 
     def resize(self, width, height):
         self.width = width
