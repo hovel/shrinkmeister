@@ -1,61 +1,65 @@
-import os
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
 import boto3
-
 from botocore.exceptions import ClientError
-
-from django.test import SimpleTestCase # No Database iteraction
 from django.conf import settings
 from django.core.cache import caches
-from django.core.files import File
-from django.core.files.base import ContentFile
+from django.test import SimpleTestCase  # No Database iteraction
 
-from shrinkmeister.utils import create_thumbnail, store_thumbnail, generate_cache_key
 from shrinkmeister.base import get_thumbnail
-from shrinkmeister.helpers import ImageLikeObject
-from shrinkmeister.helpers import merge_with_defaults
+from shrinkmeister.helpers import ImageLikeObject, merge_with_defaults
+from shrinkmeister.utils import generate_cache_key
+
 
 # Mock ImageField from DjangoStorages
 
 
 class ImageFromHashTest(SimpleTestCase):
     def setUp(self):
-            self.bucket = getattr(settings, 'THUMBNAIL_BUCKET')
-            self.cache = caches[getattr(settings, 'THUMBNAIL_CACHE_NAME')]
-            self.test_image_path = getattr(settings, 'THUMBNAIL_TEST_IMAGE', 'shrinkmeister/test_image.jpg')
-            self.s3_endpiont = getattr(settings, 'AWS_S3_HOST', None)
-            self.s3_image_key = 'shrinkmeister_test_image.jpg'
-            self.geometry_string = '50x50'
-            
-            try:
-                img_file = open(self.test_image_path)
-            except IOError:
-                self.fail("Can't open test image {}, don't your forget to setup THUMBNAIL_TEST_IMAGE?".format(self.test_image_path))
+        self.bucket = getattr(settings, 'THUMBNAIL_BUCKET')
+        self.cache = caches[getattr(settings, 'THUMBNAIL_CACHE_NAME')]
+        self.test_image_path = getattr(settings, 'THUMBNAIL_TEST_IMAGE',
+                                       'shrinkmeister/test_image.jpg')
+        self.s3_endpiont = getattr(settings, 'AWS_S3_HOST', None)
+        self.s3_image_key = 'shrinkmeister_test_image.jpg'
+        self.geometry_string = '50x50'
 
-            # Store image on S3
-            client = boto3.client('s3', endpoint_url=self.s3_endpiont)
-            try:
+        try:
+            img_file = open(self.test_image_path)
+        except IOError:
+            self.fail("Can't open test image {}, don't your forget to setup THUMBNAIL_TEST_IMAGE?"
+                      "".format(self.test_image_path))
+
+        # Store image on S3
+        client = boto3.client('s3', endpoint_url=self.s3_endpiont)
+        try:
+            client.upload_fileobj(
+                Fileobj=img_file,
+                Bucket=self.bucket, Key=self.s3_image_key,
+                ExtraArgs={'StorageClass': 'REDUCED_REDUNDANCY'})
+        except ClientError as e:
+            if e.response['Error']['Code'] == "NoSuchBucket":
+                client.create_bucket(Bucket=self.bucket)
                 client.upload_fileobj(
                     Fileobj=img_file,
                     Bucket=self.bucket, Key=self.s3_image_key,
                     ExtraArgs={'StorageClass': 'REDUCED_REDUNDANCY'})
-            except ClientError as e:
-                if e.response['Error']['Code'] == "NoSuchBucket":
-                    client.create_bucket(Bucket=self.bucket)
-                    client.upload_fileobj(
-                    Fileobj=img_file,
-                    Bucket=self.bucket, Key=self.s3_image_key,
-                    ExtraArgs={'StorageClass': 'REDUCED_REDUNDANCY'})
-                raise e
+            raise e
 
     def test_image_from_hash(self):
-        image_s3 = ImageLikeObject(url='', width=100, height=100, storage={'bucket': self.bucket, 'key': self.s3_image_key})
+        image_s3 = ImageLikeObject(url='', width=100, height=100,
+                                   storage={'bucket': self.bucket,
+                                            'key': self.s3_image_key})
 
         options = merge_with_defaults({})
 
         cache_key = generate_cache_key(
-            bucket=self.bucket, key=self.s3_image_key, geometry_string=self.geometry_string, **options)
+            bucket=self.bucket, key=self.s3_image_key,
+            geometry_string=self.geometry_string, **options)
 
         thumbnail = get_thumbnail(image_s3, self.geometry_string, **options)
         response = self.client.get(thumbnail.url, follow=True)
         thumbnail_from_cache = self.cache.get(cache_key)
-        self.assertNotEqual(thumbnail_from_cache, None, msg="No image in cache detected :(")
+        self.assertNotEqual(thumbnail_from_cache, None,
+                            msg="No image in cache detected :(")

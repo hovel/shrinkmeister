@@ -1,20 +1,24 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+import boto3
 from django.conf import settings
 from django.core import signing
 from django.core.cache import caches
 from django.http import HttpResponseRedirect, Http404
+from django.utils.six.moves.urllib.request import urlopen
 from django.views.generic.base import RedirectView
 from django.views.generic.edit import FormView
+from wand.image import Image
 
 from forms import ImageURLForm
 from shrinkmeister.helpers import merge_with_defaults
-from shrinkmeister.utils import generate_cache_key, store_thumbnail, create_thumbnail
-from shrinkmeister._utils import image_from_url, image_from_s3
+from shrinkmeister.utils import generate_cache_key, store_thumbnail, \
+    create_thumbnail
 
 shrinkmeister_cache = caches['shrinkmeister']
 s3_endpoint_url = getattr(settings, 'AWS_S3_HOST', None)
+
 
 # TODO avoid code duplication
 
@@ -42,7 +46,8 @@ class ThumbnailFromURL(FormView):
         if cached_thumbnail:
             return cached_thumbnail.url
 
-        image = image_from_url(url)
+        stream = urlopen(url)
+        image = Image(file=stream)
         thumbnail = create_thumbnail(image, geometry_string, options)
         thumbnail.url = store_thumbnail(thumbnail, cache_key,
                                         s3_endpoint_url)
@@ -75,7 +80,9 @@ class ThumbnailFromHash(RedirectView):
         if cached_thumbnail:
             return cached_thumbnail.url
 
-        image = image_from_s3(bucket, key)
+        client = boto3.client('s3')
+        stream = client.get_object(Bucket=bucket, Key=key)
+        image = Image(file=stream['body'])
         thumbnail = create_thumbnail(image, geometry_string, options)
         thumbnail.url = store_thumbnail(thumbnail, cache_key,
                                         s3_endpoint_url)

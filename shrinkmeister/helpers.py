@@ -85,7 +85,6 @@ class ImageLikeObject(object):
             self.file.key.key = storage['key']
             self.file.key.bucket.name = storage['bucket']
 
-
     def resize(self, width, height):
         self.width = width
         self.height = height

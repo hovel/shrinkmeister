@@ -7,7 +7,6 @@ from django.conf import settings
 from django.core import signing
 from django.core.cache import caches
 from django.core.files.base import ContentFile
-from django.utils.six.moves.urllib.request import urlopen
 
 from shrinkmeister.engine import Engine
 from shrinkmeister.helpers import tokey, serialize, ImageLikeObject
