@@ -28,7 +28,7 @@ def generate_cache_key(url='', bucket='', key='', geometry_string='',
 def generate_lazy_thumbnail_url(**url_data):
     signed_data = signing.dumps(url_data, key=settings.THUMBNAIL_SECRET_KEY)
     url = '//'+'/'.join(part.rstrip('/') for part in
-                   [settings.THUMBNAIL_SERVER_URL, 'hash', signed_data])
+                        [settings.THUMBNAIL_SERVER_URL, 'hash', signed_data])
     return url
 
 

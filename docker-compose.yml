@@ -8,13 +8,13 @@ shrinkmeister:
   #command: bash -c "cd /root/src/ && python manage.py runserver 0.0.0.0:80"
   command: bash -c "cd /root/src/ && python manage.py test shrinkmeister"
   environment:
+    - DEBUG=True
     - AWS_ACCESS_KEY_ID
     - AWS_SECRET_ACCESS_KEY
     - THUMBNAIL_SECRET_KEY=DEBUG
-    - THUMBNAIL_BUCKET=DEBUG
     - THUMBNAIL_SERVER_URL=localhost
-    - CACHE_LOCATION=mc
-    - DEBUG=True
+    - THUMBNAIL_BUCKET=DEBUG
+    - THUMBNAIL_CACHE_LOCATION=mc
     - AWS_S3_HOST=http://fake-s3:4569
   links:
     - mc
