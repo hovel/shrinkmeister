@@ -8,7 +8,6 @@ from django.core import signing
 from django.core.cache import caches
 from django.core.exceptions import ImproperlyConfigured
 from django.core.files.base import ContentFile
-from django.core.urlresolvers import reverse
 from django.utils.six.moves.urllib.parse import urljoin
 
 from shrinkmeister.engine import Engine
@@ -34,8 +33,7 @@ def generate_lazy_thumbnail_url(**url_data):
             not settings.THUMBNAIL_SERVER_URL.endswith('/'):
         raise ImproperlyConfigured(
             'THUMBNAIL_SERVER_URL must start with "http" and end with "/"')
-    relative_url = reverse('thumbnail_from_hash', kwargs={'hash': signed_data})
-    url = urljoin(settings.THUMBNAIL_SERVER_URL, relative_url)
+    url = urljoin(urljoin(settings.THUMBNAIL_SERVER_URL, 'hash/'), signed_data)
     return url
 
 
