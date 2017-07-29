@@ -8,7 +8,7 @@ from django.core import signing
 from django.core.cache import caches
 from django.core.exceptions import ImproperlyConfigured
 from django.core.files.base import ContentFile
-from django.urls.base import reverse
+from django.core.urlresolvers import reverse
 from django.utils.six.moves.urllib.parse import urljoin
 
 from shrinkmeister.engine import Engine
