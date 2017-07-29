@@ -13,32 +13,8 @@ from shrinkmeister.engine import Engine
 from shrinkmeister.helpers import tokey, serialize, ImageLikeObject
 from shrinkmeister.parsers import parse_geometry
 
-<<<<<<< HEAD
+
 shrinkmeister_cache = caches[getattr(settings, 'THUMBNAIL_CACHE_NAME')]
-=======
-shrinkmeister_cache = caches['shrinkmeister']
-
-
-def image_from_url(url):
-    """
-    Return Wand Image from target url
-    """
-    from wand.image import Image
-    stream = urlopen(url)
-    img = Image(file=stream)
-    return img
-
-
-def image_from_s3(bucket, key):
-    """
-    Return Wand Image from S3 bucket/key pair
-    """
-    from wand.image import Image
-    client = boto3.client('s3')
-    stream = client.get_object(Bucket=bucket, Key=key)
-    img = Image(file=stream['Body'])
-    return img
->>>>>>> 4e9c8db2dbb4d6dc5013fc2ce3c966005b078de6
 
 
 def generate_cache_key(url='', bucket='', key='', geometry_string='',
