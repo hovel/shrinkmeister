@@ -6,7 +6,10 @@ from botocore.exceptions import ClientError
 from django.conf import settings
 from django.core import signing
 from django.core.cache import caches
+from django.core.exceptions import ImproperlyConfigured
 from django.core.files.base import ContentFile
+from django.urls.base import reverse
+from django.utils.six.moves.urllib.parse import urljoin
 
 from shrinkmeister.engine import Engine
 from shrinkmeister.helpers import tokey, serialize, ImageLikeObject
@@ -27,8 +30,12 @@ def generate_cache_key(url='', bucket='', key='', geometry_string='',
 
 def generate_lazy_thumbnail_url(**url_data):
     signed_data = signing.dumps(url_data, key=settings.THUMBNAIL_SECRET_KEY)
-    url = '//'+'/'.join(part.rstrip('/') for part in
-                        [settings.THUMBNAIL_SERVER_URL, 'hash', signed_data])
+    if not settings.THUMBNAIL_SERVER_URL.startswith('http') or \
+            not settings.THUMBNAIL_SERVER_URL.endswith('/'):
+        raise ImproperlyConfigured(
+            'THUMBNAIL_SERVER_URL must start with "http" and end with "/"')
+    relative_url = reverse('thumbnail_from_hash', kwargs={'hash': signed_data})
+    url = urljoin(settings.THUMBNAIL_SERVER_URL, relative_url)
     return url
 
 

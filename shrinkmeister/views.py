@@ -82,7 +82,7 @@ class ThumbnailFromHash(RedirectView):
 
         client = boto3.client('s3')
         stream = client.get_object(Bucket=bucket, Key=key)
-        image = Image(file=stream['body'])
+        image = Image(file=stream['Body'])
         thumbnail = create_thumbnail(image, geometry_string, options)
         thumbnail.url = store_thumbnail(thumbnail, cache_key,
                                         s3_endpoint_url)

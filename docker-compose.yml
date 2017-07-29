@@ -12,7 +12,7 @@ shrinkmeister:
     - AWS_ACCESS_KEY_ID
     - AWS_SECRET_ACCESS_KEY
     - THUMBNAIL_SECRET_KEY=DEBUG
-    - THUMBNAIL_SERVER_URL=localhost
+    - THUMBNAIL_SERVER_URL=http://localhost/
     - THUMBNAIL_BUCKET=DEBUG
     - THUMBNAIL_CACHE_LOCATION=mc
     - AWS_S3_HOST=http://fake-s3:4569
