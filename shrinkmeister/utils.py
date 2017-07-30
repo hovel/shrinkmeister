@@ -63,11 +63,7 @@ def store_thumbnail(thumbnail, cache_key, endpoint_url=None):
             return store_thumbnail(thumbnail, cache_key, endpoint_url)
         raise e
 
-    thumbnail_url = client.generate_presigned_url(
-        ClientMethod='get_object',
-        Params={'Bucket': settings.THUMBNAIL_BUCKET,
-                'Key': thumbnail_filename},
-        ExpiresIn=settings.THUMBNAIL_TTL)
+    thumbnail_url = '{}/{}/{}'.format(client.meta.endpoint_url, settings.THUMBNAIL_BUCKET, thumbnail_filename)
 
     shrinkmeister_cache.set(cache_key, ImageLikeObject(
         url=thumbnail_url, width=thumbnail.width, height=thumbnail.height))
