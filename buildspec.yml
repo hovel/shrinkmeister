@@ -1,0 +1,28 @@
+version: 0.1
+ 
+phases:
+  install:
+    commands:
+      - curl -L "https://github.com/docker/compose/releases/download/1.11.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose && chmod +x /usr/local/bin/docker-compose
+  build:
+    commands:
+      - apt-get update
+      - apt-get --assume-yes install openssh-client
+      - mkdir ~/.ssh
+      - mkdir ~/.aws
+      - echo $SSH_PRIVATE_KEY | base64 --decode -i > ~/.ssh/id_rsa
+      - echo $AWS_CREDENTIALS | base64 --decode -i > ~/.aws/credentials
+      - echo $AWS_CONFIG | base64 --decode -i > ~/.aws/config
+      - chmod 700 ~/.ssh && chmod 600 ~/.ssh/*
+      - ssh-keyscan -t rsa github.com > /root/.ssh/known_hosts
+      - git clone -v -b lambda git@github.com:hovel/deploy-inventory.git ~/deploy-inventory
+      - docker-compose --version
+      # Run enviroment
+      - docker-compose up -d
+      # Run tests
+      - docker-compose -f docker-test.yml run shrinkmeister
+      # Teardown enviroment
+      - docker-compose down
+      # Deploy package
+      - ls -l ~/deploy-inventory
+      - docker-compose -f docker-zappa.yml run deploy

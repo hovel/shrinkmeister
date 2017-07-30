@@ -64,3 +64,4 @@ target/
 *.sqlite3
 
 zappa_settings.*
+s3_sandbox/*

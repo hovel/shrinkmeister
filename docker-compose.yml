@@ -3,32 +3,19 @@
 # fake-s3  127.0.0.1
 # to your /etc/hosts
 # And create s3_sandbox directory (or remove volume creation)
-shrinkmeister:
-  build: .
-  #command: bash -c "cd /root/src/ && python manage.py runserver 0.0.0.0:80"
-  command: bash -c "cd /root/src/ && python manage.py test shrinkmeister"
-  environment:
-    - DEBUG=True
-    - AWS_ACCESS_KEY_ID
-    - AWS_SECRET_ACCESS_KEY
-    - THUMBNAIL_SECRET_KEY=DEBUG
-    - THUMBNAIL_SERVER_URL=http://localhost/
-    - THUMBNAIL_BUCKET=DEBUG
-    - THUMBNAIL_CACHE_LOCATION=mc
-    - AWS_S3_HOST=http://fake-s3:4569
-  links:
-    - mc
-    - fake-s3
-  volumes:
-    - "../shrinkmeister:/root/src" # Shrinkmeister local codebase
-  ports:
-    - "8000:80"
-mc:
-  image: sylvainlasnier/memcached
-fake-s3:
-  image: lphoward/fake-s3
-  volumes:
-    - "./s3_sandbox:/fakes3_root"
-  ports:
-    - "4569:4569"
-  hostname: fake-s3
+version: '2.1'
+services:
+  mc:
+    image: sylvainlasnier/memcached
+  fake-s3:
+    image: lphoward/fake-s3
+    volumes:
+      - "./s3_sandbox:/fakes3_root"
+    ports:
+      - "4569:4569"
+    hostname: fake-s3
+#     networks:
+#       - base
+
+# networks:
+#   base:

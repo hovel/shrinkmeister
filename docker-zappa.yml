@@ -1,0 +1,17 @@
+deploy:
+  build: .
+  environment:
+    - AWS_ACCESS_KEY_ID
+    - AWS_SECRET_ACCESS_KEY
+    - THUMBNAIL_SECRET_KEY=DEBUG
+  volumes:
+    - ".:/root/src"
+    - "~/.aws:/root/.aws"
+    - "~/deploy-inventory/ansible:/ansible"
+  command: > 
+             bash -c "
+             ls -l /ansible &&
+             ansible-playbook /ansible/playbooks_new/shrinkmeister/l_shrinkmeister.yml -i /ansible/inventory_new/ &&
+             source /var/venv/bin/activate &&
+             cd /root/src/ &&
+             zappa update dev"

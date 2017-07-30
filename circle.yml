@@ -1,0 +1,19 @@
+machine:
+  pre:
+    - curl -sSL https://s3.amazonaws.com/circle-downloads/install-circleci-docker.sh | bash -s -- 1.10.0
+  services:
+    - docker
+dependencies:
+  pre:
+    - pip install -U ansible boto six
+test:
+  override:
+    - docker-compose up -d
+    - docker-compose -f docker-test.yml run shrinkmeister
+    - docker-compose down
+deployment:
+  master:
+    branch: master
+    commands:
+      - "git clone -b lambda git@github.com:hovel/deploy-inventory.git ~/deploy-inventory"
+      - "docker-compose -f docker-zappa.yml up"
