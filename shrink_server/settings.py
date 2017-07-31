@@ -91,7 +91,7 @@ CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
         'LOCATION': os.environ.get('CACHE_LOCATION', THUMBNAIL_CACHE_LOCATION),
-        'KEY_PREFIX': '',
+        'KEY_PREFIX': 'shrinkmeister-default',
     },
     THUMBNAIL_CACHE_NAME: {
         'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
