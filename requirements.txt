@@ -3,3 +3,4 @@ zappa
 wand
 boto3
 python-memcached
+django-cors-headers

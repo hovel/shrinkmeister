@@ -22,9 +22,11 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'shrinkmeister',
+    'corsheaders'
 )
 
 MIDDLEWARE_CLASSES = (
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.security.SecurityMiddleware',
@@ -98,3 +100,6 @@ CACHES = {
         'KEY_PREFIX': THUMBNAIL_CACHE_KEY_PREFIX,
     }
 }
+
+# CORS Headers
+CORS_ORIGIN_ALLOW_ALL = True
