@@ -11,7 +11,7 @@ services:
       - THUMBNAIL_SERVER_URL=http://localhost/
       - THUMBNAIL_BUCKET=DEBUG
       - THUMBNAIL_CACHE_LOCATION=redis://redis
-      - THUMBNIAL_CACHE_BACKEND=django_redis.cache.RedisCache
+      - THUMBNAIL_CACHE_BACKEND=django_redis.cache.RedisCache
       - AWS_S3_HOST=http://fake-s3:4569
     volumes:
       - ".:/root/src" # Shrinkmeister local codebase
