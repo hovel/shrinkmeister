@@ -5,8 +5,8 @@
 # And create s3_sandbox directory (or remove volume creation)
 version: '2.1'
 services:
-  mc:
-    image: sylvainlasnier/memcached
+  redis:
+    image: redis
   fake-s3:
     image: lphoward/fake-s3
     volumes:
