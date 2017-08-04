@@ -92,7 +92,7 @@ CACHES = {
     'default': {
         'BACKEND': os.environ.get('CACHE_BACKEND', THUMBNIAL_CACHE_BACKEND),
         'LOCATION': os.environ.get('CACHE_LOCATION', THUMBNAIL_CACHE_LOCATION),
-        'KEY_PREFIX': 'shrinkmeister-default',
+        'KEY_PREFIX': os.environ.get('CACHE_KEY_PREFIX', 'shrinkmeister-default'),
     },
     THUMBNAIL_CACHE_NAME: {
         'BACKEND': THUMBNIAL_CACHE_BACKEND,
