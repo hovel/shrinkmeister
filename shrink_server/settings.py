@@ -81,10 +81,7 @@ THUMBNAIL_CACHE_NAME = os.environ.get('THUMBNAIL_CACHE_NAME', 'shrinkmeister')
 THUMBNIAL_CACHE_BACKEND = os.environ.get('THUMBNIAL_CACHE_BACKEND', 'django.core.cache.backends.memcached.MemcachedCache')
 THUMBNAIL_CACHE_LOCATION = os.environ.get('THUMBNAIL_CACHE_LOCATION', '127.0.0.1:11211')
 THUMBNAIL_CACHE_KEY_PREFIX = os.environ.get('THUMBNAIL_CACHE_KEY_PREFIX', 'shrinkmeister')
-<<<<<<< HEAD
 THUMBNAIL_CACHE_BACKEND = os.environ.get('THUMBNAIL_CACHE_BACKEND', 'django.core.cache.backends.memcached.MemcachedCache')
-=======
->>>>>>> e16c2d7457aec71af44cac4553960d2e635bab8a
 
 AWS_S3_HOST = os.environ.get('AWS_S3_HOST', None)
 
@@ -94,11 +91,7 @@ SECRET_KEY = THUMBNAIL_SECRET_KEY
 # Cache (Used to store thumbnails information):
 CACHES = {
     'default': {
-<<<<<<< HEAD
         'BACKEND': THUMBNAIL_CACHE_BACKEND,
-=======
-        'BACKEND': os.environ.get('CACHE_BACKEND', THUMBNIAL_CACHE_BACKEND),
->>>>>>> e16c2d7457aec71af44cac4553960d2e635bab8a
         'LOCATION': os.environ.get('CACHE_LOCATION', THUMBNAIL_CACHE_LOCATION),
         'KEY_PREFIX': os.environ.get('CACHE_KEY_PREFIX', 'shrinkmeister-default'),
     },
