@@ -27,11 +27,15 @@ First you need to run server part (which is actual thumbnail generator) as amazo
 - Set this enviroment variables in `zappa_settings.json` for your enviroment:
   - THUMBNAIL_SECRET_KEY - secret key for client-server request encryption
   - THUMBNAIL_BUCKET - where to store your thumbnails
+<<<<<<< HEAD
   - THUMBNAIL_CACHE_BACKEND (default - redis) - driver for shared cache between lambda-server and your client to store information about generated thumbnails
+=======
+  - THUMBNAIL_TTL - how long thumbnails information will be stored in cache
+>>>>>>> e16c2d7457aec71af44cac4553960d2e635bab8a
   - THUMBNAIL_CACHE_NAME - name for shared cache
+  - THUMBNIAL_CACHE_BACKEND (default - redis) - driver for shared cache between lambda-server and your client to store information about generated thumbnails
   - THUMBNAIL_CACHE_LOCATION - location for shared cache
   - THUMBNAIL_CACHE_KEY_PREFIX - key prefix for shrinkmeister information
-  - THUMBNAIL_TTL - how long thumbnails information will be stored in cache
   - ALLOWED_HOST - host for your application (you will get this after `zappa deploy` command)
 - Run `zappa deploy` and fill `ALLOWD_HOST`
 - Run `zappa update`
