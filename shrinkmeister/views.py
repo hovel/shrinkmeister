@@ -50,13 +50,13 @@ class ThumbnailFromURL(FormView):
 
         stream = urlopen(url)
         image = Image(file=stream)
-        thumbnail = create_thumbnail(image, geometry_string, options)
-        thumbnail.url = store_thumbnail(thumbnail, cache_key, s3_endpoint_url)
         if x2:
             options['x2'] = True
             thumbnail = create_thumbnail(image, geometry_string, options)
-            thumbnail.url = store_thumbnail(thumbnail, cache_key+'@x2', s3_endpoint_url)
-
+            thumbnail.url = store_thumbnail(thumbnail, cache_key+'@2x', s3_endpoint_url)
+            options['x2'] = False
+        thumbnail = create_thumbnail(image, geometry_string, options)
+        thumbnail.url = store_thumbnail(thumbnail, cache_key, s3_endpoint_url)
         return HttpResponseRedirect(thumbnail.url)
 
 
@@ -88,11 +88,11 @@ class ThumbnailFromHash(RedirectView):
         client = boto3.client('s3')
         stream = client.get_object(Bucket=bucket, Key=key)
         image = Image(file=stream['Body'])
-        thumbnail = create_thumbnail(image, geometry_string, options)
-        thumbnail.url = store_thumbnail(thumbnail, cache_key, s3_endpoint_url)
         if x2:
             options['x2'] = True
             thumbnail = create_thumbnail(image, geometry_string, options)
-            thumbnail.url = store_thumbnail(thumbnail, cache_key+'@x2', s3_endpoint_url)
-
+            thumbnail.url = store_thumbnail(thumbnail, cache_key+'@2x', s3_endpoint_url)
+            options['x2'] = False
+        thumbnail = create_thumbnail(image, geometry_string, options)
+        thumbnail.url = store_thumbnail(thumbnail, cache_key, s3_endpoint_url)
         return thumbnail.url

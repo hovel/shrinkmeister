@@ -2,6 +2,8 @@
 from __future__ import unicode_literals
 
 import boto3
+import requests
+from wand.image import Image
 from botocore.exceptions import ClientError
 from django.conf import settings
 from django.core.cache import caches
@@ -10,10 +12,6 @@ from django.test import SimpleTestCase  # No Database iteraction
 from shrinkmeister.base import get_thumbnail
 from shrinkmeister.helpers import ImageLikeObject, merge_with_defaults
 from shrinkmeister.utils import generate_cache_key
-
-
-# Mock ImageField from DjangoStorages
-
 
 class ImageFromHashTest(SimpleTestCase):
     def setUp(self):
@@ -25,8 +23,10 @@ class ImageFromHashTest(SimpleTestCase):
         self.s3_image_key = 'shrinkmeister_test_image.jpg'
         self.geometry_string = '50x50'
 
+        self.cache.delete_pattern('*')
+
         try:
-            img_file = open(self.test_image_path)
+            img_file = open(self.test_image_path, 'rb')
         except IOError:
             self.fail("Can't open test image {}, don't your forget to setup THUMBNAIL_TEST_IMAGE?"
                       "".format(self.test_image_path))
@@ -63,3 +63,14 @@ class ImageFromHashTest(SimpleTestCase):
         thumbnail_from_cache = self.cache.get(cache_key)
         self.assertNotEqual(thumbnail_from_cache, None,
                             msg="No image in cache detected :(")
+        resp = requests.get(thumbnail_from_cache.url)
+        image = Image(blob=resp.content)
+        self.assertEqual(image.width, 50)
+        self.assertEqual(image.height, 38)
+
+        url, ext = thumbnail_from_cache.url.split('.')
+        x2_url = '{}@2x.{}'.format(url, ext)
+        resp = requests.get(x2_url)
+        image = Image(blob=resp.content)
+        self.assertEqual(image.width, 100)
+        self.assertEqual(image.height, 75)

@@ -47,4 +47,4 @@ Client
 Optional settings
 .................
 
-- THUMBNAIL_X2 (default - True) - automatically create retina image (x2 resolution) with same name and @x2 suffics on the end
+- THUMBNAIL_X2 (default - True) - automatically create retina image (x2 resolution) with same name and @2x suffics on the end
