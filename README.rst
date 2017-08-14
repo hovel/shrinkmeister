@@ -42,3 +42,9 @@ Client
 
 - Add `shrinkmeister` in your project and fill **same settings** that you set for server.
 - Fill THUMBNAIL_SERVER_URL for your server url.
+
+
+Optional settings
+.................
+
+- THUMBNAIL_X2 (default - True) - automatically create retina image (x2 resolution) with same name and @x2 suffics on the end

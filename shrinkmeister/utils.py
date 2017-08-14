@@ -40,8 +40,11 @@ def generate_lazy_thumbnail_url(**url_data):
 def create_thumbnail(image, geometry_string, options):
     engine = Engine()
     ratio = float(image.width) / image.height
-    geometry = parse_geometry(geometry_string, ratio)
-    thumbnail = engine.create(image, geometry, options)
+    x, y = parse_geometry(geometry_string, ratio)
+    if ('x2' in options) and options['x2'] :
+        x = x*2
+        y = y*2
+    thumbnail = engine.create(image, (x, y), options)
     return thumbnail
 
 

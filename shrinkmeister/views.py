@@ -13,11 +13,13 @@ from wand.image import Image
 
 from forms import ImageURLForm
 from shrinkmeister.helpers import merge_with_defaults
+from shrinkmeister.parsers import parse_geometry
 from shrinkmeister.utils import generate_cache_key, store_thumbnail, \
     create_thumbnail
 
 shrinkmeister_cache = caches['shrinkmeister']
 s3_endpoint_url = getattr(settings, 'AWS_S3_HOST', None)
+x2 = getattr(settings, 'THUMBNAIL_X2', True)
 
 
 # TODO avoid code duplication
@@ -49,8 +51,11 @@ class ThumbnailFromURL(FormView):
         stream = urlopen(url)
         image = Image(file=stream)
         thumbnail = create_thumbnail(image, geometry_string, options)
-        thumbnail.url = store_thumbnail(thumbnail, cache_key,
-                                        s3_endpoint_url)
+        thumbnail.url = store_thumbnail(thumbnail, cache_key, s3_endpoint_url)
+        if x2:
+            options['x2'] = True
+            thumbnail = create_thumbnail(image, geometry_string, options)
+            thumbnail.url = store_thumbnail(thumbnail, cache_key+'@x2', s3_endpoint_url)
 
         return HttpResponseRedirect(thumbnail.url)
 
@@ -84,7 +89,10 @@ class ThumbnailFromHash(RedirectView):
         stream = client.get_object(Bucket=bucket, Key=key)
         image = Image(file=stream['Body'])
         thumbnail = create_thumbnail(image, geometry_string, options)
-        thumbnail.url = store_thumbnail(thumbnail, cache_key,
-                                        s3_endpoint_url)
+        thumbnail.url = store_thumbnail(thumbnail, cache_key, s3_endpoint_url)
+        if x2:
+            options['x2'] = True
+            thumbnail = create_thumbnail(image, geometry_string, options)
+            thumbnail.url = store_thumbnail(thumbnail, cache_key+'@x2', s3_endpoint_url)
 
         return thumbnail.url
