@@ -68,7 +68,7 @@ class ImageFromHashTest(SimpleTestCase):
         self.assertEqual(image.width, 50)
         self.assertEqual(image.height, 38)
 
-        url, ext = thumbnail_from_cache.url.split('.')
+        url, ext = thumbnail_from_cache.url.rsplit('.', 1)
         x2_url = '{}@2x.{}'.format(url, ext)
         resp = requests.get(x2_url)
         image = Image(blob=resp.content)
