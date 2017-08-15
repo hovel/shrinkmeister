@@ -22,6 +22,7 @@ Server part
 ...........
 
 First you need to run server part (which is actual thumbnail generator) as amazon lambda application:
+
 - Application code contains `shrink_server` - ready to start django application
 - To run django project on amazon lambda you need `zappa` pacakge. Install it to virtualenv and run `zappa init`. This projcet very well documented.
 - Set this enviroment variables in `zappa_settings.json` for your enviroment:
