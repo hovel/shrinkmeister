@@ -19,11 +19,25 @@ from shrinkmeister.utils import generate_cache_key, store_thumbnail, \
 
 shrinkmeister_cache = caches['shrinkmeister']
 s3_endpoint_url = getattr(settings, 'AWS_S3_HOST', None)
-x2 = getattr(settings, 'THUMBNAIL_X2', True)
+alternative_resolutions = getattr(settings, 'THUMBNAIL_ALTERNATIVE_RESOLUTIONS', True)
+alternative_resolutions.append(1)
+alternative_resolutions.sort(reverse=True)
 
 
 # TODO avoid code duplication
 
+def generate_thumbnails(image, geometry_string, cache_key, options, alt_resolutions=None, s3_endpoint_url=None):
+    if not alt_resolutions:
+        alt_resolutions = [1]
+    for resolution in alt_resolutions:
+        options['scale_factor'] = resolution
+        thumbnail = create_thumbnail(image, geometry_string, options)
+        if resolution != 1:
+            new_key = '{}@{}x'.format(cache_key, resolution)
+        else:
+            new_key = cache_key
+        thumbnail.url = store_thumbnail(thumbnail, new_key, s3_endpoint_url)
+    return thumbnail.url
 
 class ThumbnailFromURL(FormView):
     form_class = ImageURLForm
@@ -50,14 +64,8 @@ class ThumbnailFromURL(FormView):
 
         stream = urlopen(url)
         image = Image(file=stream)
-        if x2:
-            options['x2'] = True
-            thumbnail = create_thumbnail(image, geometry_string, options)
-            thumbnail.url = store_thumbnail(thumbnail, cache_key+'@2x', s3_endpoint_url)
-            options['x2'] = False
-        thumbnail = create_thumbnail(image, geometry_string, options)
-        thumbnail.url = store_thumbnail(thumbnail, cache_key, s3_endpoint_url)
-        return HttpResponseRedirect(thumbnail.url)
+        url = generate_thumbnails(image, geometry_string, cache_key, options, alternative_resolutions, s3_endpoint_url)
+        return HttpResponseRedirect(url)
 
 
 class ThumbnailFromHash(RedirectView):
@@ -88,11 +96,5 @@ class ThumbnailFromHash(RedirectView):
         client = boto3.client('s3')
         stream = client.get_object(Bucket=bucket, Key=key)
         image = Image(file=stream['Body'])
-        if x2:
-            options['x2'] = True
-            thumbnail = create_thumbnail(image, geometry_string, options)
-            thumbnail.url = store_thumbnail(thumbnail, cache_key+'@2x', s3_endpoint_url)
-            options['x2'] = False
-        thumbnail = create_thumbnail(image, geometry_string, options)
-        thumbnail.url = store_thumbnail(thumbnail, cache_key, s3_endpoint_url)
-        return thumbnail.url
+        url = generate_thumbnails(image, geometry_string, cache_key, options, alternative_resolutions, s3_endpoint_url)
+        return url
