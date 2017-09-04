@@ -13,6 +13,11 @@ from shrinkmeister.base import get_thumbnail
 from shrinkmeister.helpers import ImageLikeObject, merge_with_defaults
 from shrinkmeister.utils import generate_cache_key
 
+from sorl.thumbnail.images import ImageFile
+from sorl.thumbnail import get_thumbnail
+
+from storages.backends.s3boto3 import S3Boto3Storage, S3Boto3StorageFile
+
 class ImageFromHashTest(SimpleTestCase):
     def setUp(self):
         self.bucket = getattr(settings, 'THUMBNAIL_BUCKET')
@@ -48,17 +53,15 @@ class ImageFromHashTest(SimpleTestCase):
             raise e
 
     def test_image_from_hash(self):
-        image_s3 = ImageLikeObject(url='', width=100, height=100,
-                                   storage={'bucket': self.bucket,
-                                            'key': self.s3_image_key})
+        storage = S3Boto3Storage(bucket=self.bucket)
+        s3_file = S3Boto3StorageFile(name=self.s3_image_key, mode='r', storage=storage)
+        image_s3 = ImageFile(s3_file)
 
         options = merge_with_defaults({})
-
-        cache_key = generate_cache_key(
-            bucket=self.bucket, key=self.s3_image_key,
-            geometry_string=self.geometry_string, **options)
-
         thumbnail = get_thumbnail(image_s3, self.geometry_string, **options)
+
+        print(thumbnail.url)
+
         response = self.client.get(thumbnail.url, follow=True)
         thumbnail_from_cache = self.cache.get(cache_key)
         self.assertNotEqual(thumbnail_from_cache, None,
