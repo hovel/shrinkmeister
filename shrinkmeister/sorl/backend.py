@@ -1,4 +1,5 @@
 import logging
+from copy import copy
 
 from django.utils.six import string_types
 from django.core.cache import caches
@@ -10,29 +11,34 @@ from sorl.thumbnail.images import ImageFile, BaseImageFile
 from sorl.thumbnail import default
 from sorl.thumbnail.parsers import parse_geometry
 from storages.backends.s3boto3 import S3Boto3Storage
+from shrinkmeister.utils import generate_cache_key, generate_lazy_thumbnail_url
 
 
 shrinkmeister_cache = caches['shrinkmeister']
 
 THUMBNAIL_BUCKET = settings.THUMBNAIL_BUCKET
 SHRINKMEISTER_SERVER_NODE = getattr(settings, 'SHRINKMEISTER_SERVER_NODE', False)
+THUMBNAIL_TTL = settings.THUMBNAIL_TTL
 
 logger = logging.getLogger(__name__)
 
 class ImageLikeObject(BaseImageFile):
-    def __init__(self, geometry_string, ratio, name):
+    def __init__(self, geometry_string, ratio, name, url):
         '''
         Pass ImageFile as source
         '''
         self.name = name
+        self._url = url
         self.size = parse_geometry(geometry_string, ratio)
-        
-    def exists(self):
-        return True
 
     @property
     def url(self):
-        return  '{}/{}'.format(settings.THUMBNAIL_SERVER_URL, self.name)
+        return self._url
+    
+    def exists(self):
+        return True
+
+    
 
 
 class ShrinkmeisterThumbnailBackend(ThumbnailBackend):
@@ -43,6 +49,13 @@ class ShrinkmeisterThumbnailBackend(ThumbnailBackend):
         secondly it will create it.
         """
         logger.debug('Getting thumbnail for file [%s] at [%s]', file_, geometry_string)
+
+        name = None
+        if 'cache_key' in options:
+            name = options['cache_key']
+            options.pop('cache_key')
+
+        options_orig = copy(options)
 
         if file_:
             source = ImageFile(file_)
@@ -68,11 +81,13 @@ class ShrinkmeisterThumbnailBackend(ThumbnailBackend):
             if value != getattr(default_settings, attr):
                 options.setdefault(key, value)
 
-        name = self._get_thumbnail_filename(source, geometry_string, options)
+        if not name:
+            name = generate_cache_key('', source.storage.bucket, source.key,
+                    geometry_string, **options)
         cached = shrinkmeister_cache.get(name, None)
 
-        if cached:
-            return cached
+        #if cached:
+        #    return cached
 
         if SHRINKMEISTER_SERVER_NODE:
             thumbnail = ImageFile(name, default.storage)
@@ -81,7 +96,16 @@ class ShrinkmeisterThumbnailBackend(ThumbnailBackend):
                                     thumbnail)
             self._create_alternative_resolutions(source_image, geometry_string,
                                                     options, thumbnail.name)
-            cached = shrinkmeister_cache.set(name, thumbnail)
+            cached = shrinkmeister_cache.set(name, thumbnail, THUMBNAIL_TTL)
             return thumbnail
-        ratio = default.engine.get_image_ratio(source, options)
-        return ImageLikeObject(geometry_string, ratio, name)
+        data = {}
+        data['bucket'] = source.storage.bucket_name
+        data['key'] = source.name
+        data['geometry_string'] = geometry_string
+        data['cache_key'] = name
+        # Send only specified options without defaults for url shorten
+        # Should be configurable in future
+        data['options'] = options_orig
+        ratio = None
+        url = generate_lazy_thumbnail_url(data)
+        return ImageLikeObject(geometry_string, ratio, name, url)

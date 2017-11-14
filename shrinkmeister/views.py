@@ -9,13 +9,14 @@ from django.http import HttpResponseRedirect, Http404
 from django.utils.six.moves.urllib.request import urlopen
 from django.views.generic.base import RedirectView
 from django.views.generic.edit import FormView
-from wand.image import Image
 
 from forms import ImageURLForm
 from shrinkmeister.helpers import merge_with_defaults
 from shrinkmeister.parsers import parse_geometry
-from shrinkmeister.utils import generate_cache_key, store_thumbnail, \
-    create_thumbnail
+from shrinkmeister.utils import generate_cache_key, store_thumbnail
+from storages.backends.s3boto3 import S3Boto3Storage, S3Boto3StorageFile
+
+from sorl import get_thumbnail
 
 shrinkmeister_cache = caches['shrinkmeister']
 s3_endpoint_url = getattr(settings, 'AWS_S3_HOST', None)
@@ -72,29 +73,42 @@ class ThumbnailFromHash(RedirectView):
     permanent = False
 
     def get_redirect_url(self, *args, **kwargs):
-        try:
-            data = signing.loads(kwargs['hash'],
-                                 key=settings.THUMBNAIL_SECRET_KEY)
-        except Exception as e:
-            raise Http404()
+        data = signing.loads(kwargs['hash'],
+                            key=settings.THUMBNAIL_SECRET_KEY)
 
         try:
             bucket = data['bucket']
             key = data['key']
             geometry_string = data['geometry_string']
-            options = merge_with_defaults(data['options'])
         except KeyError:
             raise Http404()
 
-        cache_key = generate_cache_key(
-            bucket=bucket, key=key, geometry_string=geometry_string, **options)
+        if 'options' in data:
+            options = merge_with_defaults(data['options'])
+        else:
+            options = {}
 
+        if 'cache_key' in data:
+            cache_key = data['cache_key']
+        else:
+            # !!! WARNING !!!
+            # Generating same cache_key on both sides may be tricky
+            # Preferred way is to transfer cache_key from client side
+            cache_key = generate_cache_key(
+                bucket=bucket, key=key, geometry_string=geometry_string, **options)
+
+        # Multiple calls for same image during thumbnail generation scenario
         cached_thumbnail = shrinkmeister_cache.get(cache_key, None)
-        if cached_thumbnail:
-            return cached_thumbnail.url
+#        if cached_thumbnail:
+#            return cached_thumbnail.url
 
         client = boto3.client('s3')
-        stream = client.get_object(Bucket=bucket, Key=key)
-        image = Image(file=stream['Body'])
-        url = generate_thumbnails(image, geometry_string, cache_key, options, alternative_resolutions, s3_endpoint_url)
-        return url
+        storage = S3Boto3Storage(bucket=bucket)
+        s3_file = S3Boto3StorageFile(name=key, mode='r', storage=storage)
+        # Mock model Image field
+        # S3Boto3StorageFile store storage information in ._storage wich is not checked by 
+        # ImageFile during storage identification
+        s3_file.storage = storage
+        options['cache_key'] = cache_key
+        thumbnail = get_thumbnail(s3_file, geometry_string, **options)
+        return thumbnail.url

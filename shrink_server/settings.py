@@ -73,7 +73,7 @@ DATABASES = {}
 
 STATIC_URL = '/static/'
 
-# SHRINKMEISTER SETTINGS
+# SHRINKMEISTER SERVER SETTINGS
 
 SHRINKMEISTER_SERVER_NODE = True
 
@@ -89,7 +89,11 @@ THUMBNAIL_ALTERNATIVE_RESOLUTIONS = [2]
 
 THUMBNAIL_BACKEND = 'shrinkmeister.sorl.backend.ShrinkmeisterThumbnailBackend'
 
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 AWS_S3_HOST = os.environ.get('AWS_S3_HOST', None)
+AWS_STORAGE_BUCKET_NAME = 'SHRINKMEISTER_STORAGE'
+AWS_AUTO_CREATE_BUCKET = True
+
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = THUMBNAIL_SECRET_KEY

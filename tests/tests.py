@@ -9,7 +9,6 @@ from django.conf import settings
 from django.core.cache import caches
 from django.test import SimpleTestCase  # No Database iteraction
 
-from shrinkmeister.base import get_thumbnail
 from shrinkmeister.helpers import ImageLikeObject, merge_with_defaults
 from shrinkmeister.utils import generate_cache_key
 
@@ -55,17 +54,25 @@ class ImageFromHashTest(SimpleTestCase):
     def test_image_from_hash(self):
         storage = S3Boto3Storage(bucket=self.bucket)
         s3_file = S3Boto3StorageFile(name=self.s3_image_key, mode='r', storage=storage)
+        
+        # Mock model Image field
+        # S3Boto3StorageFile store storage information in ._storage wich is not checked by 
+        # ImageFile during storage identification
+        s3_file.storage = storage
+        
         image_s3 = ImageFile(s3_file)
 
-        options = merge_with_defaults({})
-        thumbnail = get_thumbnail(image_s3, self.geometry_string, **options)
-
+        # Test local part
+        options = {}
+        thumbnail = get_thumbnail(s3_file, self.geometry_string, **options)
         print(thumbnail.url)
 
-        response = self.client.get(thumbnail.url, follow=True)
+        # Now, test shrinkmeister server (should be up and running)
+        response = requests.get(thumbnail.url)
         thumbnail_from_cache = self.cache.get(cache_key)
         self.assertNotEqual(thumbnail_from_cache, None,
                             msg="No image in cache detected :(")
+
         resp = requests.get(thumbnail_from_cache.url)
         image = Image(blob=resp.content)
         self.assertEqual(image.width, 50)
