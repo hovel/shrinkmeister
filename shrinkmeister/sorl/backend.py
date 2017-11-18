@@ -7,7 +7,7 @@ from django.core.cache import caches
 from sorl.thumbnail.base import ThumbnailBackend
 from sorl.thumbnail.conf import settings, defaults as default_settings
 from sorl.thumbnail.helpers import tokey, serialize
-from sorl.thumbnail.images import ImageFile, BaseImageFile
+from sorl.thumbnail.images import BaseImageFile, ImageFile as IFile
 from sorl.thumbnail import default
 from sorl.thumbnail.parsers import parse_geometry
 from storages.backends.s3boto3 import S3Boto3Storage
@@ -19,8 +19,28 @@ shrinkmeister_cache = caches['shrinkmeister']
 THUMBNAIL_BUCKET = settings.THUMBNAIL_BUCKET
 SHRINKMEISTER_SERVER_NODE = getattr(settings, 'SHRINKMEISTER_SERVER_NODE', False)
 THUMBNAIL_TTL = settings.THUMBNAIL_TTL
+SHRINKMEISTER_SIGNED_URLS = getattr(settings, 'SHRINKMEISTER_SIGNED_URLS', False)
 
 logger = logging.getLogger(__name__)
+
+class ImageFile(IFile):
+    def __getstate__(self):
+        state = self.__dict__.copy()
+        # Remove the unpicklable entries.
+        del state['storage']
+        state['storage_bucket'] = self.storage.bucket_name
+        return state
+
+    def __setstate__(self, state):
+        self.__dict__.update(state)
+        self.storage = S3Boto3Storage(bucket=state['storage_bucket'])
+
+    @property
+    def url(self):
+        if SHRINKMEISTER_SIGNED_URLS:
+            return self.storage.url(self.name)
+        else:
+            return 'https://s3.amazonaws.com/{}/{}'.format(self.storage.bucket_name, self.name)
 
 class ImageLikeObject(BaseImageFile):
     def __init__(self, geometry_string, ratio, name, url):
@@ -82,12 +102,11 @@ class ShrinkmeisterThumbnailBackend(ThumbnailBackend):
                 options.setdefault(key, value)
 
         if not name:
-            name = generate_cache_key('', source.storage.bucket, source.key,
+            name = generate_cache_key('', source.storage.bucket, source.name,
                     geometry_string, **options)
         cached = shrinkmeister_cache.get(name, None)
-
-        #if cached:
-        #    return cached
+        if cached:
+            return cached
 
         if SHRINKMEISTER_SERVER_NODE:
             thumbnail = ImageFile(name, default.storage)

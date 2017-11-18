@@ -65,11 +65,12 @@ class ImageFromHashTest(SimpleTestCase):
         # Test local part
         options = {}
         thumbnail = get_thumbnail(s3_file, self.geometry_string, **options)
-        print(thumbnail.url)
+        print('Generated thumbnail url: {}'.format(thumbnail.url))
+        print('Thumbnail cache key: {}'.format(thumbnail.name))
 
         # Now, test shrinkmeister server (should be up and running)
         response = requests.get(thumbnail.url)
-        thumbnail_from_cache = self.cache.get(cache_key)
+        thumbnail_from_cache = self.cache.get(thumbnail.name)
         self.assertNotEqual(thumbnail_from_cache, None,
                             msg="No image in cache detected :(")
 
@@ -80,6 +81,7 @@ class ImageFromHashTest(SimpleTestCase):
 
         url, ext = thumbnail_from_cache.url.rsplit('.', 1)
         x2_url = '{}@2x.{}'.format(url, ext)
+        print('x2 url {}' .format(x2_url))
         resp = requests.get(x2_url)
         image = Image(blob=resp.content)
         self.assertEqual(image.width, 100)

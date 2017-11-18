@@ -7,3 +7,4 @@ python-memcached
 django-cors-headers
 django-redis
 sorl-thumbnail
+django-storages

@@ -23,7 +23,14 @@ def generate_cache_key(url='', bucket='', key='', geometry_string='',
     """
     Generate hash key for cache for specific image.
     """
+    ext = ''
+    try:
+        ext = key.rsplit('.')[1]
+    except:
+        pass
     cache_key = tokey(url, bucket, key, geometry_string, serialize(options))
+    if ext:
+        cache_key = '{}.{}'.format(cache_key, ext)
     return cache_key
 
 
