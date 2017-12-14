@@ -3,22 +3,27 @@ import os
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+DEBUG = True
+
 # Application definition
 
 INSTALLED_APPS = (
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.messages',
     'django.contrib.staticfiles',
     'shrinkmeister',
-    'sorl.thumbnail'
+    'sorl.thumbnail',
+    'tests.imagestorage',
 )
 
 MIDDLEWARE_CLASSES = ()
 
-ROOT_URLCONF = []
+ROOT_URLCONF = "tests.urls"
 
-TEMPLATES = []
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'APP_DIRS': True,
+    },
+]
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.8/topics/i18n/
@@ -41,11 +46,14 @@ DATABASES = {}
 STATIC_URL = '/static/'
 
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+AWS_STORAGE_BUCKET_NAME = 'DEBUG'
+TEMPLATE_DEBUG = True
+THUMBNAIL_DEBUG = True
 
 # SHRINKMEISTER SETTINGS
 THUMBNAIL_SECRET_KEY = os.environ['THUMBNAIL_SECRET_KEY']
-THUMBNAIL_SERVER_URL = os.environ['THUMBNAIL_SERVER_URL']
-THUMBNAIL_BUCKET = os.environ['THUMBNAIL_BUCKET']
+THUMBNAIL_SERVER_URL = os.environ.get('THUMBNAIL_SERVER_URL', 'http://localhost:8001/')
+THUMBNAIL_BUCKET = os.environ.get('THUMBNAIL_BUCKET', 'DEBUG')
 THUMBNAIL_TTL = os.environ.get('THUMBNAIL_TTL', 60 * 60 * 24 * 7)  # 7 days
 
 
@@ -78,3 +86,11 @@ CACHES = {
         'KEY_PREFIX': THUMBNAIL_CACHE_KEY_PREFIX,
     }
 }
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': 'testdatabase.sqlite',
+    }
+}
+

@@ -1,3 +1,4 @@
+{% load thumbnail %}
 <!doctype html>
 <html lang="{{ LANGUAGE_CODE }}">
 <head>
@@ -5,9 +6,13 @@
     <title>Shrinkmeister test</title>
 </head>
 <body>
-<form method="post">
+<form method="post" enctype="multipart/form-data">
     {{ form.as_p }}
     <input type=submit value="Upload">
 </form>
+There is {{ images.count }} images in database:
+{% for image in images %}
+     <img src="{% thumbnail image.image "100x100"  %}">
+{% endfor %}
 </body>
 </html>
