@@ -5,12 +5,27 @@
 # And create s3_sandbox directory (or remove volume creation)
 version: '2.1'
 services:
+  shrinkmeister:
+    build: .
+    command: bash -c "ls -l ~/.aws && cd /root/src/ && /var/venv/bin/python manage.py runserver 0.0.0.0:8000"
+    environment:
+      - DEBUG=True
+      - AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY
+      - THUMBNAIL_SECRET_KEY=DEBUG
+      - THUMBNAIL_SERVER_URL=http://localhost:8001/
+      - THUMBNAIL_BUCKET=DEBUG
+      - THUMBNAIL_CACHE_LOCATION=redis://redis
+      - THUMBNAIL_CACHE_BACKEND=django_redis.cache.RedisCache
+      - ALLOWED_HOST=shrinkmeister
+    volumes:
+      - ".:/root/src" # Shrinkmeister local codebase
+      - ".aws:/root/.aws"
+    ports:
+      - "8001:8000"
+    expose:
+      - "8000"
   redis:
     image: redis
-  fake-s3:
-    image: lphoward/fake-s3
-    volumes:
-      - "./s3_sandbox:/fakes3_root"
     ports:
-      - "4569:4569"
-    hostname: fake-s3
+      - "6379:6379"

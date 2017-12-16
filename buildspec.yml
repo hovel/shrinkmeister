@@ -20,7 +20,7 @@ phases:
       # Run enviroment
       - docker-compose up -d
       # Run tests
-      - docker-compose -f docker-test.yml run shrinkmeister
+      - docker-compose -f docker-test.yml run test
       # Teardown enviroment
       - docker-compose down
       # Deploy package

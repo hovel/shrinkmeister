@@ -23,11 +23,18 @@ def generate_cache_key(url='', bucket='', key='', geometry_string='',
     """
     Generate hash key for cache for specific image.
     """
+    ext = ''
+    try:
+        ext = key.rsplit('.')[1]
+    except:
+        pass
     cache_key = tokey(url, bucket, key, geometry_string, serialize(options))
+    if ext:
+        cache_key = '{}.{}'.format(cache_key, ext)
     return cache_key
 
 
-def generate_lazy_thumbnail_url(**url_data):
+def generate_lazy_thumbnail_url(url_data):
     signed_data = signing.dumps(url_data, key=settings.THUMBNAIL_SECRET_KEY)
     if not settings.THUMBNAIL_SERVER_URL.startswith('http') or \
             not settings.THUMBNAIL_SERVER_URL.endswith('/'):
@@ -36,13 +43,6 @@ def generate_lazy_thumbnail_url(**url_data):
     url = urljoin(settings.THUMBNAIL_SERVER_URL, 'hash/') + signed_data
     return url
 
-
-def create_thumbnail(image, geometry_string, options):
-    engine = Engine()
-    ratio = float(image.width) / image.height
-    geometry = parse_geometry(geometry_string, ratio)
-    thumbnail = engine.create(image, geometry, options)
-    return thumbnail
 
 
 def store_thumbnail(thumbnail, cache_key, endpoint_url=None):

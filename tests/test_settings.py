@@ -3,55 +3,27 @@ import os
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/1.8/howto/deployment/checklist/
-
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = bool(os.environ.get('DEBUG', False)=='True')
-#DEBUG = True
-
-ALLOWED_HOSTS = [os.environ.get('ALLOWED_HOST', '127.0.0.1'), 'localhost']
-
+DEBUG = True
 
 # Application definition
 
 INSTALLED_APPS = (
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.messages',
     'django.contrib.staticfiles',
     'shrinkmeister',
-    'corsheaders',
-    'sorl.thumbnail'
+    'sorl.thumbnail',
+    'tests.imagestorage',
 )
 
-MIDDLEWARE_CLASSES = (
-    'corsheaders.middleware.CorsMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'django.middleware.security.SecurityMiddleware',
-)
+MIDDLEWARE_CLASSES = ()
 
-ROOT_URLCONF = 'shrink_server.urls'
+ROOT_URLCONF = "tests.urls"
 
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
         'APP_DIRS': True,
-        'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.debug',
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
-            ],
-        },
     },
 ]
-
-WSGI_APPLICATION = 'shrink_server.wsgi.application'
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.8/topics/i18n/
@@ -73,14 +45,19 @@ DATABASES = {}
 
 STATIC_URL = '/static/'
 
-# SHRINKMEISTER SERVER SETTINGS
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+AWS_STORAGE_BUCKET_NAME = 'DEBUG'
+TEMPLATE_DEBUG = True #!! Deprecated in django, for sorl debugging
+THUMBNAIL_DEBUG = True
 
-SHRINKMEISTER_SERVER_NODE = True
-
+# SHRINKMEISTER SETTINGS
 THUMBNAIL_SECRET_KEY = os.environ['THUMBNAIL_SECRET_KEY']
-THUMBNAIL_SERVER_URL = os.environ['THUMBNAIL_SERVER_URL']
-THUMBNAIL_BUCKET = os.environ['THUMBNAIL_BUCKET']
+THUMBNAIL_SERVER_URL = os.environ.get('THUMBNAIL_SERVER_URL', 'http://localhost:8001/')
+THUMBNAIL_BUCKET = os.environ.get('THUMBNAIL_BUCKET', 'DEBUG')
 THUMBNAIL_TTL = os.environ.get('THUMBNAIL_TTL', 60 * 60 * 24 * 7)  # 7 days
+
+
+
 THUMBNAIL_CACHE_NAME = os.environ.get('THUMBNAIL_CACHE_NAME', 'shrinkmeister')
 THUMBNAIL_CACHE_BACKEND = os.environ.get('THUMBNIAL_CACHE_BACKEND', 'django_redis.cache.RedisCache')
 THUMBNAIL_CACHE_LOCATION = os.environ.get('THUMBNAIL_CACHE_LOCATION', 'redis://127.0.0.1')
@@ -88,12 +65,9 @@ THUMBNAIL_CACHE_KEY_PREFIX = os.environ.get('THUMBNAIL_CACHE_KEY_PREFIX', 'shrin
 THUMBNAIL_ALTERNATIVE_RESOLUTIONS = [2]
 
 THUMBNAIL_BACKEND = 'shrinkmeister.sorl.backend.ShrinkmeisterThumbnailBackend'
+THUMBNAIL_ENGINE = 'shrinkmeister.sorl.engine.DummyEngine'
 
-DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 AWS_S3_HOST = os.environ.get('AWS_S3_HOST', None)
-AWS_STORAGE_BUCKET_NAME = 'SHRINKMEISTER_STORAGE'
-AWS_AUTO_CREATE_BUCKET = True
-
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = THUMBNAIL_SECRET_KEY
@@ -113,5 +87,10 @@ CACHES = {
     }
 }
 
-# CORS Headers
-CORS_ORIGIN_ALLOW_ALL = True
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': 'testdatabase.sqlite',
+    }
+}
+

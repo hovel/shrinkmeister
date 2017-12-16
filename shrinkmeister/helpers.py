@@ -72,9 +72,8 @@ class ImageLikeObject(object):
     provides easy replacement for easy_thumbnail
     """
 
-    def __init__(self, url, width, height, format='jpeg', storage=None):
+    def __init__(self, name, width=None, height=None, format='jpeg', storage=None):
         super(ImageLikeObject, self).__init__()
-        self.url = url
         self.width = width
         self.height = height
         self.format = format
@@ -92,6 +91,10 @@ class ImageLikeObject(object):
     def crop(self, x_offset, y_offset, width, height):
         self.width = width
         self.height = height
+
+    @property
+    def url(self):
+        return  '{}/{}'.format(settings.THUMBNAIL_SERVER_URL, self.name)
 
 
 def merge_with_defaults(options):

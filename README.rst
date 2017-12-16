@@ -22,6 +22,7 @@ Server part
 ...........
 
 First you need to run server part (which is actual thumbnail generator) as amazon lambda application:
+
 - Application code contains `shrink_server` - ready to start django application
 - To run django project on amazon lambda you need `zappa` pacakge. Install it to virtualenv and run `zappa init`. This projcet very well documented.
 - Set this enviroment variables in `zappa_settings.json` for your enviroment:
@@ -42,3 +43,9 @@ Client
 
 - Add `shrinkmeister` in your project and fill **same settings** that you set for server.
 - Fill THUMBNAIL_SERVER_URL for your server url.
+
+
+Optional settings
+.................
+
+- THUMBNAIL_ALTERNATIVE_RESOLUTIONS (default [2]) - automatically create retina image (x2 resolutions or else) with same name and @2x (or else) suffics on the end
