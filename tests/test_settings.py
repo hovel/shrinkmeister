@@ -47,7 +47,7 @@ STATIC_URL = '/static/'
 
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 AWS_STORAGE_BUCKET_NAME = 'DEBUG'
-TEMPLATE_DEBUG = True
+TEMPLATE_DEBUG = True #!! Deprecated in django, for sorl debugging
 THUMBNAIL_DEBUG = True
 
 # SHRINKMEISTER SETTINGS

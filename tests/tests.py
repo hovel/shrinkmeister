@@ -69,15 +69,19 @@ class ImageFromHashTest(SimpleTestCase):
         print('Thumbnail cache key: {}'.format(thumbnail.name))
 
         # Now, test shrinkmeister server (should be up and running)
-        response = requests.get(thumbnail.url)
-        thumbnail_from_cache = self.cache.get(thumbnail.name)
-        self.assertNotEqual(thumbnail_from_cache, None,
-                            msg="No image in cache detected :(")
-
-        resp = requests.get(thumbnail_from_cache.url)
+        resp = requests.get(thumbnail.url)
         image = Image(blob=resp.content)
         self.assertEqual(image.width, 50)
         self.assertEqual(image.height, 38)
+
+        thumbnail_from_cache = self.cache.get(thumbnail.name)
+        self.assertNotEqual(thumbnail_from_cache, None,
+                            msg="No image in cache detected :(")
+        image = Image(blob=resp.content)
+        self.assertEqual(image.width, 50)
+        self.assertEqual(image.height, 38)
+
+        resp = requests.get(thumbnail_from_cache.url)
 
         url, ext = thumbnail_from_cache.url.rsplit('.', 1)
         x2_url = '{}@2x.{}'.format(url, ext)

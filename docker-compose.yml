@@ -17,11 +17,14 @@ services:
       - THUMBNAIL_BUCKET=DEBUG
       - THUMBNAIL_CACHE_LOCATION=redis://redis
       - THUMBNAIL_CACHE_BACKEND=django_redis.cache.RedisCache
+      - ALLOWED_HOST=shrinkmeister
     volumes:
       - ".:/root/src" # Shrinkmeister local codebase
       - ".aws:/root/.aws"
     ports:
       - "8001:8000"
+    expose:
+      - "8000"
   redis:
     image: redis
     ports:

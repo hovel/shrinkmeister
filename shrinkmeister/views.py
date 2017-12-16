@@ -73,10 +73,9 @@ class ThumbnailFromHash(RedirectView):
     permanent = False
 
     def get_redirect_url(self, *args, **kwargs):
-        data = signing.loads(kwargs['hash'],
-                            key=settings.THUMBNAIL_SECRET_KEY)
-
         try:
+            data = signing.loads(kwargs['hash'],
+                            key=settings.THUMBNAIL_SECRET_KEY)
             bucket = data['bucket']
             key = data['key']
             geometry_string = data['geometry_string']

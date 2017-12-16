@@ -2,13 +2,14 @@ version: '2.1'
 services:
   test:
     build: .
-    command: bash -c "ls -l ~/.aws && cd /root/src/ && /var/venv/bin/python runtests.sh"
+    command: bash -c "ls -l ~/.aws && cd /root/src/ && /var/venv/bin/python manage_test.py test"
     environment:
       - DEBUG=True
       - AWS_ACCESS_KEY_ID
       - AWS_SECRET_ACCESS_KEY
       - THUMBNAIL_SECRET_KEY=DEBUG
-      - THUMBNAIL_SERVER_URL=http://localhost:8001/
+      - THUMBNAIL_SERVER_URL=http://shrinkmeister:8000/
+      - THUMBNAIL_CACHE_LOCATION=redis://redis
     volumes:
       - ".:/root/src" # Shrinkmeister local codebase
       - ".aws:/root/.aws"
