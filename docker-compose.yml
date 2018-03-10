@@ -1,8 +1,3 @@
-# BEFORE USAGE:
-# PUT:
-# fake-s3  127.0.0.1
-# to your /etc/hosts
-# And create s3_sandbox directory (or remove volume creation)
 version: '2.1'
 services:
   shrinkmeister:

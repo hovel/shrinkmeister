@@ -66,37 +66,6 @@ def deserialize(s):
     return json.loads(s)
 
 
-class ImageLikeObject(object):
-    """
-    Image object imitator for templates
-    provides easy replacement for easy_thumbnail
-    """
-
-    def __init__(self, name, width=None, height=None, format='jpeg', storage=None):
-        super(ImageLikeObject, self).__init__()
-        self.width = width
-        self.height = height
-        self.format = format
-        if storage:
-            self.file = namedtuple('file', ['storage'])
-            self.file.key = namedtuple('key', ['bucket', 'key'])
-            self.file.key.bucket = namedtuple('bucket', ['name'])
-            self.file.key.key = storage['key']
-            self.file.key.bucket.name = storage['bucket']
-
-    def resize(self, width, height):
-        self.width = width
-        self.height = height
-
-    def crop(self, x_offset, y_offset, width, height):
-        self.width = width
-        self.height = height
-
-    @property
-    def url(self):
-        return  '{}/{}'.format(settings.THUMBNAIL_SERVER_URL, self.name)
-
-
 def merge_with_defaults(options):
     # FIXME several options will or may be ignored
     default_options = {

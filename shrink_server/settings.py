@@ -1,6 +1,6 @@
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
-
+from django.core.exceptions import ImproperlyConfigured
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
@@ -77,9 +77,9 @@ STATIC_URL = '/static/'
 
 SHRINKMEISTER_SERVER_NODE = True
 
-THUMBNAIL_SECRET_KEY = os.environ['THUMBNAIL_SECRET_KEY']
-THUMBNAIL_SERVER_URL = os.environ['THUMBNAIL_SERVER_URL']
-THUMBNAIL_BUCKET = os.environ['THUMBNAIL_BUCKET']
+THUMBNAIL_SECRET_KEY = os.environ.get('THUMBNAIL_SECRET_KEY', '')
+THUMBNAIL_SERVER_URL = os.environ.get('THUMBNAIL_SERVER_URL', '')
+THUMBNAIL_BUCKET = os.environ.get('THUMBNAIL_BUCKET', '')
 THUMBNAIL_TTL = os.environ.get('THUMBNAIL_TTL', 60 * 60 * 24 * 7)  # 7 days
 THUMBNAIL_CACHE_NAME = os.environ.get('THUMBNAIL_CACHE_NAME', 'shrinkmeister')
 THUMBNAIL_CACHE_BACKEND = os.environ.get('THUMBNIAL_CACHE_BACKEND', 'django_redis.cache.RedisCache')
@@ -115,3 +115,18 @@ CACHES = {
 
 # CORS Headers
 CORS_ORIGIN_ALLOW_ALL = True
+
+try:
+    from settings_local import *
+except:
+    pass
+
+if not THUMBNAIL_SECRET_KEY:
+    raise ImproperlyConfigured('THUMBNAIL_SECRET_KEY is empty!')
+
+if not THUMBNAIL_SERVER_URL:
+    raise ImproperlyConfigured('THUMBNAIL_SERVER_URL is empty!')
+
+if not THUMBNAIL_BUCKET:
+    raise ImproperlyConfigured('THUMBNAIL_BUCKET is empty!')
+
