@@ -12,8 +12,9 @@ from django.test import SimpleTestCase, override_settings, Client  # No Database
 from shrinkmeister.helpers import merge_with_defaults
 from shrinkmeister.utils import generate_cache_key
 
+from sorl.thumbnail import default, get_thumbnail
 from sorl.thumbnail.images import ImageFile
-from sorl.thumbnail import get_thumbnail
+from sorl.thumbnail.conf import settings as sorl_settings 
 
 from storages.backends.s3boto3 import S3Boto3Storage, S3Boto3StorageFile
 
@@ -59,8 +60,6 @@ class ImageFromHashTest(SimpleTestCase):
         # S3Boto3StorageFile store storage information in ._storage wich is not checked by 
         # ImageFile during storage identification
         s3_file.storage = storage
-        
-        image_s3 = ImageFile(s3_file)
 
         # Test local part
         options = {}
@@ -93,6 +92,12 @@ class ImageFromHashTest(SimpleTestCase):
 
     @override_settings(SHRINKMEISTER_SERVER_NODE=True)
     def test_server_side(self):
+        # !!! Reload sorl settings and fallback to default engine !!!
+        del settings.THUMBNAIL_ENGINE
+        sorl_settings._setup()
+        default.engine._setup()
+        
+        self.cache.delete_pattern('*')
         storage = S3Boto3Storage(bucket=self.bucket)
         s3_file = S3Boto3StorageFile(name=self.s3_image_key, mode='r', storage=storage)
 
@@ -102,7 +107,7 @@ class ImageFromHashTest(SimpleTestCase):
         response = client.get('/hash/{}/'.format(TEST_HASH))
         self.assertEqual(response.status_code, 302)
         resp = requests.get(response.url)
-        
+        print(response.url)
         image = Image(blob=resp.content)
         self.assertEqual(image.width, 50)
         self.assertEqual(image.height, 38)

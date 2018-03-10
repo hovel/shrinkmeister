@@ -7,17 +7,17 @@ from django.core.cache import caches
 from sorl.thumbnail.base import ThumbnailBackend
 from sorl.thumbnail.conf import settings, defaults as default_settings
 from sorl.thumbnail.helpers import tokey, serialize
-from sorl.thumbnail.images import BaseImageFile, ImageFile as IFile
+from sorl.thumbnail.images import BaseImageFile, DummyImageFile, ImageFile as IFile
 from sorl.thumbnail import default
 from sorl.thumbnail.parsers import parse_geometry
 from storages.backends.s3boto3 import S3Boto3Storage
 from shrinkmeister.utils import generate_cache_key, generate_lazy_thumbnail_url
+from django.conf import settings as django_settings
 
 
 shrinkmeister_cache = caches['shrinkmeister']
 
 THUMBNAIL_BUCKET = settings.THUMBNAIL_BUCKET
-SHRINKMEISTER_SERVER_NODE = getattr(settings, 'SHRINKMEISTER_SERVER_NODE', False)
 THUMBNAIL_TTL = settings.THUMBNAIL_TTL
 SHRINKMEISTER_SIGNED_URLS = getattr(settings, 'SHRINKMEISTER_SIGNED_URLS', False)
 
@@ -108,7 +108,7 @@ class ShrinkmeisterThumbnailBackend(ThumbnailBackend):
         if cached:
             return cached
 
-        if SHRINKMEISTER_SERVER_NODE:
+        if getattr(django_settings, 'SHRINKMEISTER_SERVER_NODE', False):
             thumbnail = ImageFile(name, default.storage)
             source_image = default.engine.get_image(source)
             self._create_thumbnail(source_image, geometry_string, options,

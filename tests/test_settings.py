@@ -51,6 +51,8 @@ TEMPLATE_DEBUG = True #!! Deprecated in django, for sorl debugging
 THUMBNAIL_DEBUG = True
 
 # SHRINKMEISTER SETTINGS
+SHRINKMEISTER_SERVER_NODE = False
+
 THUMBNAIL_SECRET_KEY = os.environ.get('THUMBNAIL_SECRET_KEY', 'DEBUG')
 THUMBNAIL_SERVER_URL = os.environ.get('THUMBNAIL_SERVER_URL', 'http://localhost:8001/')
 THUMBNAIL_BUCKET = os.environ.get('THUMBNAIL_BUCKET', 'DEBUG')
