@@ -7,7 +7,7 @@ from wand.image import Image
 from botocore.exceptions import ClientError
 from django.conf import settings
 from django.core.cache import caches
-from django.test import SimpleTestCase  # No Database iteraction
+from django.test import SimpleTestCase, override_settings, Client  # No Database iteraction
 
 from shrinkmeister.helpers import merge_with_defaults
 from shrinkmeister.utils import generate_cache_key
@@ -90,3 +90,19 @@ class ImageFromHashTest(SimpleTestCase):
         image = Image(blob=resp.content)
         self.assertEqual(image.width, 100)
         self.assertEqual(image.height, 75)
+
+    @override_settings(SHRINKMEISTER_SERVER_NODE=True)
+    def test_server_side(self):
+        storage = S3Boto3Storage(bucket=self.bucket)
+        s3_file = S3Boto3StorageFile(name=self.s3_image_key, mode='r', storage=storage)
+
+        TEST_HASH = 'eyJjYWNoZV9rZXkiOiJhMmRmMDIyYTE1ZWIxOWVjMTVmZDkwYmU0YWYyZGI0NS5qcGciLCJidWNrZXQiOiJERUJVRyIsIm9wdGlvbnMiOnt9LCJrZXkiOiJzaHJpbmttZWlzdGVyX3Rlc3RfaW1hZ2UuanBnIiwiZ2VvbWV0cnlfc3RyaW5nIjoiNTB4NTAifQ:1el0oY:0v_ysAWXzZvekGaFramCUjQjqgI'
+        TEST_CACHE_KEY = 'a2df022a15eb19ec15fd90be4af2db45.jpg'
+        client = Client()
+        response = client.get('/hash/{}/'.format(TEST_HASH))
+        self.assertEqual(response.status_code, 302)
+        resp = requests.get(response.url)
+        
+        image = Image(blob=resp.content)
+        self.assertEqual(image.width, 50)
+        self.assertEqual(image.height, 38)

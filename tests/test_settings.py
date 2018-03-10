@@ -51,12 +51,10 @@ TEMPLATE_DEBUG = True #!! Deprecated in django, for sorl debugging
 THUMBNAIL_DEBUG = True
 
 # SHRINKMEISTER SETTINGS
-THUMBNAIL_SECRET_KEY = os.environ['THUMBNAIL_SECRET_KEY']
+THUMBNAIL_SECRET_KEY = os.environ.get('THUMBNAIL_SECRET_KEY', 'DEBUG')
 THUMBNAIL_SERVER_URL = os.environ.get('THUMBNAIL_SERVER_URL', 'http://localhost:8001/')
 THUMBNAIL_BUCKET = os.environ.get('THUMBNAIL_BUCKET', 'DEBUG')
 THUMBNAIL_TTL = os.environ.get('THUMBNAIL_TTL', 60 * 60 * 24 * 7)  # 7 days
-
-
 
 THUMBNAIL_CACHE_NAME = os.environ.get('THUMBNAIL_CACHE_NAME', 'shrinkmeister')
 THUMBNAIL_CACHE_BACKEND = os.environ.get('THUMBNIAL_CACHE_BACKEND', 'django_redis.cache.RedisCache')
@@ -71,6 +69,10 @@ AWS_S3_HOST = os.environ.get('AWS_S3_HOST', None)
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = THUMBNAIL_SECRET_KEY
+
+# CORS Headers for server testing
+CORS_ORIGIN_ALLOW_ALL = True
+
 
 # Cache (Used to store thumbnails information):
 CACHES = {
